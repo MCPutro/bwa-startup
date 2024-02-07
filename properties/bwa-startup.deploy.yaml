@@ -1,0 +1,26 @@
+server:
+  port: 9999
+
+database:
+  hostname: localhost 
+  user: postgres 
+  password: welcome1 
+  dbname: bwa 
+  port: 5432 
+  ssl-mode: disable
+  timeZone: Asia/Jakarta
+  max-idle-connections-in-second: 600
+  max-open-connections-in-second: 600
+  connection-max-life-time-in-second: 600
+
+firebase:
+  project-id: project_id
+  service-account-id: iam.gserviceaccount.com
+  admin-key: ewo
+  bucket: 
+    name: project.appspot.com
+    path: path
+
+jwt:
+  secret-key: kuc1n9t3rbAn9
+  expired-time-in-minute: 30
