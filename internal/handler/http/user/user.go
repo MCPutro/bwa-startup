@@ -130,7 +130,7 @@ func (h *handlerImpl) UploadAvatar(c *gin.Context) {
 	userIDInterface, _ := c.Get("userID")
 	userID := fmt.Sprint(userIDInterface)
 	unitID, err := strconv.Atoi(userID)
-	
+
 	//get file from req
 	file, uploadedFileHeader, err := c.Request.FormFile("file")
 	defer file.Close()
@@ -142,7 +142,7 @@ func (h *handlerImpl) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	urls, err := h.firebase.UploadImage(c.Request.Context(), unitID, file, uploadedFileHeader)
+	resp, err := h.firebase.UploadImage(c.Request.Context(), unitID, file, uploadedFileHeader)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
 			Success:      false,
@@ -154,8 +154,8 @@ func (h *handlerImpl) UploadAvatar(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, response.New{
 		Success: true,
-		Code:    http.StatusCreated,
-		Message: urls,
+		Code:    http.StatusOK,
+		Data:    resp,
 	})
 }
 

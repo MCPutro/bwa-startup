@@ -2,6 +2,7 @@ package firebase
 
 import (
 	"bwa-startup/config"
+	"bwa-startup/internal/handler/response"
 	"bwa-startup/internal/repository/user"
 	"context"
 	"encoding/base64"
@@ -13,11 +14,10 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
-	"net/url"
 )
 
 type Service interface {
-	UploadImage(ctx context.Context, userId int, uploadedFile multipart.File, uploadedFileHeader *multipart.FileHeader) (string, error)
+	UploadImage(ctx context.Context, userId int, uploadedFile multipart.File, uploadedFileHeader *multipart.FileHeader) (*response.User, error)
 }
 
 type serviceImpl struct {
@@ -28,16 +28,16 @@ type serviceImpl struct {
 }
 
 // UploadImage implements Service.
-func (fs *serviceImpl) UploadImage(ctx context.Context, userId int, file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
+func (fs *serviceImpl) UploadImage(ctx context.Context, userId int, file multipart.File, fileHeader *multipart.FileHeader) (*response.User, error) {
 	//check user id
 	existingUser, err := fs.userRepo.FindById(ctx, userId)
-	if err != nil {
-		return "", err
+	if err != nil || existingUser == nil {
+		return nil, err
 	}
 
 	bucket, err := fs.storage.Bucket(fs.cfg.BucketName())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	imagePath := fmt.Sprint(fs.cfg.BucketPath(), "/users/", userId, "/avatar/", userId, "-", fileHeader.Filename)
@@ -48,8 +48,7 @@ func (fs *serviceImpl) UploadImage(ctx context.Context, userId int, file multipa
 	id := uuid.New()
 	wc.ObjectAttrs.Metadata = map[string]string{"firebaseStorageDownloadTokens": id.String()}
 	if _, err = io.Copy(wc, file); err != nil {
-		log.Println(err)
-		return "", err
+		return nil, err
 	}
 	err = wc.Close()
 	if err != nil {
@@ -59,12 +58,15 @@ func (fs *serviceImpl) UploadImage(ctx context.Context, userId int, file multipa
 	//update database
 	existingUser.Image = imagePath
 	existingUser.ImageToken = id.String()
-	_, err = fs.userRepo.Update(ctx, existingUser)
+	updatedUser, err := fs.userRepo.Update(ctx, existingUser)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", fs.cfg.BucketName(), url.PathEscape(imagePath), id.String()), nil
+	//return fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", fs.cfg.BucketName(), url.PathEscape(imagePath), id.String()), nil
+	userResponse := updatedUser.ToUserResponse(fs.cfg.BucketName(), "")
+
+	return &userResponse, nil
 }
 
 func resizeImage() {
