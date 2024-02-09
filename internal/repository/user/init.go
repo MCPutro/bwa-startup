@@ -8,12 +8,12 @@ import (
 )
 
 type repositoryImpl struct {
-	DB *gorm.DB
+	db *gorm.DB
 }
 
 // Save implements UserRepository.
 func (ur *repositoryImpl) Save(ctx context.Context, user *entity.User) (*entity.User, error) {
-	err := ur.DB.WithContext(ctx).Create(user).Error
+	err := ur.db.WithContext(ctx).Create(user).Error
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (ur *repositoryImpl) Save(ctx context.Context, user *entity.User) (*entity.
 func (ur *repositoryImpl) FindById(ctx context.Context, ID int) (*entity.User, error) {
 	var user entity.User
 
-	err := ur.DB.WithContext(ctx).First(&user, ID).Error
+	err := ur.db.WithContext(ctx).First(&user, ID).Error
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (ur *repositoryImpl) FindById(ctx context.Context, ID int) (*entity.User, e
 func (ur *repositoryImpl) FindAll(ctx context.Context) (*[]entity.User, error) {
 	users := new([]entity.User)
 
-	result := ur.DB.WithContext(ctx).Find(users)
+	result := ur.db.WithContext(ctx).Find(users)
 
 	if result.Error != nil {
 		return nil, result.Error
@@ -50,7 +50,7 @@ func (ur *repositoryImpl) FindAll(ctx context.Context) (*[]entity.User, error) {
 // FindByEmail implements Repository.
 func (ur *repositoryImpl) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
-	err := ur.DB.WithContext(ctx).Where("email = ?", email).Find(&user).Error
+	err := ur.db.WithContext(ctx).Where("email = ?", email).Find(&user).Error
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (ur *repositoryImpl) FindByEmail(ctx context.Context, email string) (*entit
 }
 
 func (ur *repositoryImpl) Update(ctx context.Context, user *entity.User) (*entity.User, error) {
-	err := ur.DB.WithContext(ctx).Save(user).Error
+	err := ur.db.WithContext(ctx).Save(user).Error
 	if err != nil {
 		return nil, err
 	}
@@ -68,5 +68,5 @@ func (ur *repositoryImpl) Update(ctx context.Context, user *entity.User) (*entit
 }
 
 func NewRepository(db *gorm.DB) Repository {
-	return &repositoryImpl{DB: db}
+	return &repositoryImpl{db: db}
 }
