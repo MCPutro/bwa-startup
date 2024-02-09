@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/spf13/viper"
@@ -29,7 +30,11 @@ type configImpl struct {
 func NewConfig() Config {
 
 	configOnce.Do(func() {
-		fileConfig := "properties/bwa-startup.develop.yaml"
+		envMode := os.Getenv("ENV_MODE")
+		if envMode == "" {
+			envMode = "develop"
+		}
+		fileConfig := fmt.Sprintf("properties/bwa-startup.%s.yaml", envMode)
 
 		v := viper.New()
 		// v.SetConfigType("yaml")
