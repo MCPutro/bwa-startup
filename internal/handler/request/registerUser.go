@@ -14,10 +14,10 @@ type RegisterUser struct {
 	Password   string `json:"password"`
 }
 
-func (r *RegisterUser) ToEntity() entity.User {
+func (r *RegisterUser) ToEntity() *entity.User {
 	passwordHash, _ := bcrypt.GenerateFromPassword([]byte(r.Password), bcrypt.DefaultCost)
 
-	return entity.User{
+	return &entity.User{
 		Name:       r.Name,
 		Occupation: r.Occupation,
 		Email:      r.Email,

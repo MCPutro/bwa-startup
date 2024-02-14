@@ -44,7 +44,7 @@ func (us *serviceImpl) Register(ctx context.Context, input *request.RegisterUser
 
 	//save new user to database
 	userEntity := input.ToEntity()
-	u, err := us.repository.Save(ctx, &userEntity)
+	u, err := us.repository.Save(ctx, userEntity)
 	if err != nil {
 		return nil, err
 	}
@@ -55,8 +55,7 @@ func (us *serviceImpl) Register(ctx context.Context, input *request.RegisterUser
 		return nil, err
 	}
 
-	resp := u.ToUserResponse(us.config.FirebaseConf().BucketName(), token)
-	return &resp, nil
+	return u.ToUserResponse(us.config.FirebaseConf().BucketName(), token), nil
 }
 
 // Login implements Service.
@@ -78,8 +77,7 @@ func (us *serviceImpl) Login(ctx context.Context, input *request.UserLogin) (*re
 		return nil, err
 	}
 
-	resp := existingUser.ToUserResponse(us.config.FirebaseConf().BucketName(), token)
-	return &resp, nil
+	return existingUser.ToUserResponse(us.config.FirebaseConf().BucketName(), token), nil
 }
 
 // IsEmailAvailable implements Service.

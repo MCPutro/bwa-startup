@@ -29,9 +29,9 @@ func (h *handlerImpl) GetCampaign(c *gin.Context) {
 	campaignByUserId, err := h.service.GetCampaignByUserId(c.Request.Context(), unitID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
-			Success:      false,
-			Code:         http.StatusInternalServerError,
-			ErrorMessage: err.Error(),
+			Success: false,
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
 		})
 		return
 	}

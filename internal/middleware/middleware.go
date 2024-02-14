@@ -15,9 +15,9 @@ func New(jwtRepository auth.Repository) gin.HandlerFunc {
 		if tokenString == "" {
 			//c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
 			c.JSON(http.StatusUnauthorized, response.New{
-				Success:      false,
-				Code:         http.StatusUnauthorized,
-				ErrorMessage: "authorization header is required",
+				Success: false,
+				Code:    http.StatusUnauthorized,
+				Message: "authorization header is required",
 			})
 
 			c.Abort()
@@ -30,9 +30,9 @@ func New(jwtRepository auth.Repository) gin.HandlerFunc {
 		if err != nil {
 			//c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.JSON(http.StatusUnauthorized, response.New{
-				Success:      false,
-				Code:         http.StatusUnauthorized,
-				ErrorMessage: err.Error(),
+				Success: false,
+				Code:    http.StatusUnauthorized,
+				Message: err.Error(),
 			})
 			c.Abort()
 			return
@@ -42,9 +42,9 @@ func New(jwtRepository auth.Repository) gin.HandlerFunc {
 		if !ok {
 			//c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid JWT token"})
 			c.JSON(http.StatusUnauthorized, response.New{
-				Success:      false,
-				Code:         http.StatusUnauthorized,
-				ErrorMessage: "invalid token",
+				Success: false,
+				Code:    http.StatusUnauthorized,
+				Message: "invalid token",
 			})
 			c.Abort()
 			return

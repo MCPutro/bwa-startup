@@ -71,9 +71,7 @@ func (fs *serviceImpl) UploadImage(ctx context.Context, userId int, file multipa
 	}
 
 	//return fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", fs.cfg.BucketName(), url.PathEscape(imagePath), id.String()), nil
-	userResponse := updatedUser.ToUserResponse(fs.cfg.BucketName(), "")
-
-	return &userResponse, nil
+	return updatedUser.ToUserResponse(fs.cfg.BucketName(), ""), nil
 }
 
 func resizeImage() {

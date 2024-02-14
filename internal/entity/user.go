@@ -20,12 +20,12 @@ type User struct {
 	UpdatedAt  time.Time `sql:"type:timestamp"`
 }
 
-func (u *User) ToUserResponse(bucket string, token string) response.User {
+func (u *User) ToUserResponse(bucket string, token string) *response.User {
 	var urlAvatar string
 	if u.Image != "" && u.ImageToken != "" {
 		urlAvatar = fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", bucket, url.PathEscape(u.Image), u.ImageToken)
 	}
-	return response.User{
+	return &response.User{
 		ID:         u.ID,
 		Name:       u.Name,
 		Occupation: u.Occupation,

@@ -23,9 +23,9 @@ func (h *handlerImpl) Login(c *gin.Context) {
 	err := c.ShouldBindJSON(&body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
-			Success:      false,
-			Code:         http.StatusBadRequest,
-			ErrorMessage: err.Error(),
+			Success: false,
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
 		})
 		return
 	}
@@ -33,9 +33,9 @@ func (h *handlerImpl) Login(c *gin.Context) {
 	u, err := h.service.Login(c.Request.Context(), &body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
-			Success:      false,
-			Code:         http.StatusBadRequest,
-			ErrorMessage: err.Error(),
+			Success: false,
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
 		})
 		return
 	}
@@ -54,9 +54,9 @@ func (h *handlerImpl) RegisterUser(c *gin.Context) {
 	err := c.ShouldBindJSON(&body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
-			Success:      false,
-			Code:         http.StatusBadRequest,
-			ErrorMessage: err.Error(),
+			Success: false,
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
 		})
 		return
 	}
@@ -64,9 +64,9 @@ func (h *handlerImpl) RegisterUser(c *gin.Context) {
 	u, err := h.service.Register(c.Request.Context(), &body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
-			Success:      false,
-			Code:         http.StatusInternalServerError,
-			ErrorMessage: err.Error(),
+			Success: false,
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
 		})
 		return
 	}
@@ -86,9 +86,9 @@ func (h *handlerImpl) CheckEmailAvailable(c *gin.Context) {
 	err := c.ShouldBindJSON(&body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
-			Success:      false,
-			Code:         http.StatusBadRequest,
-			ErrorMessage: err.Error(),
+			Success: false,
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
 		})
 		return
 	}
@@ -96,9 +96,9 @@ func (h *handlerImpl) CheckEmailAvailable(c *gin.Context) {
 	b, err := h.service.IsEmailAvailable(c.Request.Context(), body.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
-			Success:      false,
-			Code:         http.StatusInternalServerError,
-			ErrorMessage: err.Error(),
+			Success: false,
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
 		})
 		return
 	}
@@ -138,9 +138,9 @@ func (h *handlerImpl) UploadAvatar(c *gin.Context) {
 	resp, err := h.firebase.UploadImage(c.Request.Context(), unitID, file, uploadedFileHeader)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
-			Success:      false,
-			Code:         http.StatusInternalServerError,
-			ErrorMessage: err.Error(),
+			Success: false,
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
 		})
 		return
 	}
