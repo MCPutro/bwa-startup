@@ -20,7 +20,7 @@ type serviceImpl struct {
 }
 
 // GetAll implements Service.
-func (us *serviceImpl) GetAll(ctx context.Context) (*[]entity.User, error) {
+func (us *serviceImpl) GetAll(ctx context.Context) ([]*entity.User, error) {
 	// resp = new([]entity.User)
 
 	u, err := us.repository.FindAll(ctx)

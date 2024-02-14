@@ -33,10 +33,10 @@ func (ur *repositoryImpl) FindById(ctx context.Context, ID int) (*entity.User, e
 }
 
 // FindAll implements UserRepository.
-func (ur *repositoryImpl) FindAll(ctx context.Context) (*[]entity.User, error) {
-	users := new([]entity.User)
+func (ur *repositoryImpl) FindAll(ctx context.Context) ([]*entity.User, error) {
+	var users []*entity.User
 
-	result := ur.db.WithContext(ctx).Find(users)
+	result := ur.db.WithContext(ctx).Find(&users)
 
 	if result.Error != nil {
 		return nil, result.Error

@@ -1,4 +1,4 @@
-CREATE TABLE public.campaign_image
+CREATE TABLE public.campaign_images
 (
     id          bigserial NOT NULL,
     campaign_id int8      NOT NULL,

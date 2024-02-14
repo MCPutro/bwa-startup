@@ -6,6 +6,6 @@ import (
 )
 
 type Repository interface {
-	FindAll(ctx context.Context) (*[]entity.Campaign, error)
-	FindByUserId(ctx context.Context, userId int) (*[]entity.Campaign, error)
+	FindAll(ctx context.Context) (entity.CampaignList, error)
+	FindByUserId(ctx context.Context, userId int) (entity.CampaignList, error)
 }

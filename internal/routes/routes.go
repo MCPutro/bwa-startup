@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"bwa-startup/internal/handler/http/campaign"
 	"bwa-startup/internal/handler/http/user"
 	"bwa-startup/internal/middleware"
 	"bwa-startup/internal/repository"
@@ -26,4 +27,7 @@ func RegisterRoute(r *gin.Engine, service service.Service, repo repository.Repos
 
 	//with middleware
 	UserRoutePrivate(apiPublic, userHandler, authMiddleware)
+
+	campaignHandler := campaign.NewHandler(service.CampaignService())
+	CampaignRoute(apiPublic, campaignHandler, authMiddleware)
 }

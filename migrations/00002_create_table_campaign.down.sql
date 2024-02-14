@@ -1,1 +1,1 @@
-DROP TABLE public.campaign;
+DROP TABLE public.campaigns;

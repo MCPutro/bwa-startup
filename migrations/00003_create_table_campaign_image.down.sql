@@ -1,1 +1,1 @@
-DROP TABLE public.campaign_image;
+DROP TABLE public.campaign_images;

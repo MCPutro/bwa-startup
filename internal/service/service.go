@@ -3,6 +3,7 @@ package service
 import (
 	"bwa-startup/config"
 	"bwa-startup/internal/repository"
+	"bwa-startup/internal/service/campaign"
 	"bwa-startup/internal/service/firebase"
 	"bwa-startup/internal/service/user"
 
@@ -15,11 +16,15 @@ var (
 
 	firebaseService     firebase.Service
 	firebaseServiceOnce sync.Once
+
+	campaignService     campaign.Service
+	campaignServiceOnce sync.Once
 )
 
 type Service interface {
 	UserService() user.Service
 	FirebaseService() firebase.Service
+	CampaignService() campaign.Service
 }
 
 type serviceManagerImpl struct {
@@ -41,6 +46,13 @@ func (s *serviceManagerImpl) UserService() user.Service {
 		userService = user.NewService(s.repo.UserRepository(), s.conf, s.repo.AuthRepository())
 	})
 	return userService
+}
+
+func (s *serviceManagerImpl) CampaignService() campaign.Service {
+	campaignServiceOnce.Do(func() {
+		campaignService = campaign.NewService(s.repo.CampaignRepository())
+	})
+	return campaignService
 }
 
 func NewServiceManagerImpl(config config.Config, repo repository.Repository) Service {
