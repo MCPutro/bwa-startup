@@ -6,6 +6,7 @@ import (
 	"bwa-startup/internal/repository/user"
 	"context"
 	"encoding/base64"
+	"errors"
 	cloudFirebase "firebase.google.com/go/v4"
 	firebaseStorage "firebase.google.com/go/v4/storage"
 	"fmt"
@@ -14,21 +15,27 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
+	"strings"
 )
 
-type Service interface {
-	UploadImage(ctx context.Context, userId int, uploadedFile multipart.File, uploadedFileHeader *multipart.FileHeader) (*response.User, error)
-}
-
 type serviceImpl struct {
-	cfg      config.FirebaseConfig
-	app      *cloudFirebase.App
-	userRepo user.Repository
-	storage  *firebaseStorage.Client
+	cfg              config.FirebaseConfig
+	userRepo         user.Repository
+	supportImageType map[string]bool
+	app              *cloudFirebase.App
+	storage          *firebaseStorage.Client
 }
 
 // UploadImage implements Service.
 func (fs *serviceImpl) UploadImage(ctx context.Context, userId int, file multipart.File, fileHeader *multipart.FileHeader) (*response.User, error) {
+	//validate file type
+	contentType := fileHeader.Header.Get("Content-Type")
+	splitContentType := strings.Split(contentType, "/")
+
+	if strings.ToUpper(splitContentType[0]) != "IMAGE" && !fs.supportImageType[strings.ToLower(splitContentType[1])] {
+		return nil, errors.New("unsupported image type")
+	}
+
 	//check user id
 	existingUser, err := fs.userRepo.FindById(ctx, userId)
 	if err != nil || existingUser == nil {
@@ -40,7 +47,7 @@ func (fs *serviceImpl) UploadImage(ctx context.Context, userId int, file multipa
 		return nil, err
 	}
 
-	imagePath := fmt.Sprint(fs.cfg.BucketPath(), "/users/", userId, "/avatar/", userId, "-", fileHeader.Filename)
+	imagePath := fmt.Sprint(fs.cfg.BucketPath(), "/users/", userId, "/avatar/", userId, "-avatar.", strings.Split(fileHeader.Filename, ".")[1])
 
 	// upload it to google cloud store
 	wc := bucket.Object(imagePath).NewWriter(ctx)
@@ -73,20 +80,22 @@ func resizeImage() {
 	//image.Rect()
 }
 
-func NewService(cfg config.FirebaseConfig, repo user.Repository) Service {
+func NewService(cfg config.Config, repo user.Repository) Service {
 
 	ctx := context.Background()
 
-	key, err := base64.StdEncoding.DecodeString(cfg.AdminKey())
+	firebaseConf := cfg.FirebaseConf()
+
+	key, err := base64.StdEncoding.DecodeString(firebaseConf.AdminKey())
 	if err != nil {
 		return nil
 	}
 
 	opt := option.WithCredentialsJSON(key)
 	nApp, err := cloudFirebase.NewApp(ctx, &cloudFirebase.Config{
-		StorageBucket:    fmt.Sprint("gs://", cfg.BucketName()),
-		ProjectID:        cfg.ProjectId(),
-		ServiceAccountID: cfg.ServiceAccount(),
+		StorageBucket:    fmt.Sprint("gs://", firebaseConf.BucketName()),
+		ProjectID:        firebaseConf.ProjectId(),
+		ServiceAccountID: firebaseConf.ServiceAccount(),
 	}, opt)
 
 	if err != nil {
@@ -101,9 +110,10 @@ func NewService(cfg config.FirebaseConfig, repo user.Repository) Service {
 	}
 
 	return &serviceImpl{
-		cfg:      cfg,
-		app:      nApp,
-		userRepo: repo,
-		storage:  storages,
+		cfg:              firebaseConf,
+		supportImageType: cfg.ImageSupport(),
+		app:              nApp,
+		userRepo:         repo,
+		storage:          storages,
 	}
 }

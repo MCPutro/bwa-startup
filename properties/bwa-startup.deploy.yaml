@@ -24,3 +24,8 @@ firebase:
 jwt:
   secret-key: kuc1n9t3rbAn9
   expired-time-in-minute: 30
+
+image-type-support:
+  - jpg
+  - jpeg
+  - png

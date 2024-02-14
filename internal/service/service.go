@@ -30,7 +30,7 @@ type serviceManagerImpl struct {
 // FirebaseService implements Service.
 func (s *serviceManagerImpl) FirebaseService() firebase.Service {
 	firebaseServiceOnce.Do(func() {
-		firebaseService = firebase.NewService(s.conf.FirebaseConf(), s.repo.UserRepository())
+		firebaseService = firebase.NewService(s.conf, s.repo.UserRepository())
 	})
 	return firebaseService
 }
@@ -38,7 +38,7 @@ func (s *serviceManagerImpl) FirebaseService() firebase.Service {
 // UserService implements Service.
 func (s *serviceManagerImpl) UserService() user.Service {
 	userServiceOnce.Do(func() {
-		userService = user.NewService(s.repo.UserRepository(), s.conf, s.repo.JwtRepository())
+		userService = user.NewService(s.repo.UserRepository(), s.conf, s.repo.AuthRepository())
 	})
 	return userService
 }

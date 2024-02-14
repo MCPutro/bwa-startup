@@ -5,7 +5,7 @@ import (
 	"bwa-startup/internal/entity"
 	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
-	"bwa-startup/internal/repository/jwt"
+	"bwa-startup/internal/repository/auth"
 	"bwa-startup/internal/repository/user"
 	"context"
 	"errors"
@@ -16,7 +16,7 @@ import (
 type serviceImpl struct {
 	repository user.Repository
 	config     config.Config
-	auth       jwt.Repository
+	auth       auth.Repository
 }
 
 // GetAll implements Service.
@@ -50,7 +50,7 @@ func (us *serviceImpl) Register(ctx context.Context, input *request.RegisterUser
 	}
 
 	//generate token
-	token, err := us.auth.GenerateJWT(u)
+	token, err := us.auth.GenerateToken(u)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (us *serviceImpl) Login(ctx context.Context, input *request.UserLogin) (*re
 	}
 
 	//generate token
-	token, err := us.auth.GenerateJWT(existingUser)
+	token, err := us.auth.GenerateToken(existingUser)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (us *serviceImpl) IsEmailAvailable(ctx context.Context, email string) (bool
 	return true, nil
 }
 
-func NewService(repo user.Repository, conf config.Config, auth jwt.Repository) Service {
+func NewService(repo user.Repository, conf config.Config, auth auth.Repository) Service {
 	return &serviceImpl{
 		repository: repo,
 		config:     conf,

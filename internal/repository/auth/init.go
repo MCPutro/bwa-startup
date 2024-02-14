@@ -1,45 +1,43 @@
-package jwt
+package auth
 
 import (
 	"bwa-startup/config"
 	"bwa-startup/internal/entity"
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"time"
 )
 
 type crypto struct {
 	auth config.AuthConfig
 }
 
-//const JWT_SERCRET_KEY = "my_secret"
-
-func (j *crypto) GenerateJWT(user *entity.User) (string, error) {
+func (j *crypto) GenerateToken(user *entity.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
 		"Id":    user.ID,
 		"Email": user.Email,
 		//"iss":      "issue",
 		"sub": "login",
 		//"aud": "aud",
-		"exp": jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
+		//"exp": jwt.NewNumericDate(time.Now().Add(30 * time.Minute)),
+		"exp": jwt.NewNumericDate(j.auth.TokenExpiredTime()),
 		//"nbf" : jwt.NewNumericDate(time.Now().Add(30 * time.Minute)), //NotBefore
 		"jti": uuid.NewString(), //unique id jwt
 	})
 
-	ss, err := token.SignedString([]byte(j.auth.SecretKey()))
+	tokenString, err := token.SignedString([]byte(j.auth.SecretKey()))
 
 	if err != nil {
 		return "", err
 	}
-	return ss, nil
+	return tokenString, nil
 }
 
-func (j *crypto) ValidateJWT(token string) (map[string]interface{}, error) {
+func (j *crypto) ValidateToken(token string) (map[string]interface{}, error) {
 	t, err := jwt.Parse(token, func(t_ *jwt.Token) (interface{}, error) {
 		if _, ok := t_.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method %v", t_.Header["alg"])
+			//return nil, fmt.Errorf("unexpected signing method %v", t_.Header["alg"])
+			return nil, errors.New("invalid token")
 		}
 		return []byte(j.auth.SecretKey()), nil
 	})
@@ -92,6 +90,6 @@ func jwtError(err error) error {
 	}
 }
 
-func NewJWT(auth config.AuthConfig) Repository {
+func NewAuth(auth config.AuthConfig) Repository {
 	return &crypto{auth: auth}
 }

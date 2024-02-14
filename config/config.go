@@ -11,6 +11,7 @@ import (
 var (
 	conf       *configImpl
 	configOnce sync.Once
+	imageType  map[string]bool
 )
 
 type Config interface {
@@ -18,13 +19,15 @@ type Config interface {
 	FirebaseConf() FirebaseConfig
 	DatabaseConf() *Database
 	ServerConf() *Server
+	ImageSupport() map[string]bool
 }
 
 type configImpl struct {
-	Server   Server   `mapstructure:"server"`
-	Database Database `mapstructure:"database"`
-	Firebase Firebase `mapstructure:"firebase"`
-	Jwt      JWT      `mapstructure:"jwt"`
+	Server    Server   `mapstructure:"server"`
+	Database  Database `mapstructure:"database"`
+	Firebase  Firebase `mapstructure:"firebase"`
+	Jwt       JWT      `mapstructure:"jwt"`
+	ImageType []string `mapstructure:"image-type-support"`
 }
 
 func NewConfig() Config {
@@ -50,6 +53,10 @@ func NewConfig() Config {
 			panic(fmt.Errorf("failed to unmarshal config: %s", err))
 		}
 
+		imageType = map[string]bool{}
+		for _, s := range conf.ImageType {
+			imageType[s] = true
+		}
 	})
 
 	return conf
@@ -69,4 +76,9 @@ func (c *configImpl) DatabaseConf() *Database {
 
 func (c *configImpl) ServerConf() *Server {
 	return &c.Server
+}
+
+func (c *configImpl) ImageSupport() map[string]bool {
+	return imageType
+	//return c.ImageType
 }

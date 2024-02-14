@@ -20,7 +20,7 @@ func RegisterRoute(r *gin.Engine, service service.Service, repo repository.Repos
 
 	userHandler := user.NewHandler(service.UserService(), service.FirebaseService())
 
-	authMiddleware := middleware.New(repo.JwtRepository())
+	authMiddleware := middleware.New(repo.AuthRepository())
 
 	UserRoutePublic(apiPublic, userHandler)
 

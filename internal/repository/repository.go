@@ -2,8 +2,8 @@ package repository
 
 import (
 	"bwa-startup/config"
+	"bwa-startup/internal/repository/auth"
 	"bwa-startup/internal/repository/campaign"
-	"bwa-startup/internal/repository/jwt"
 	"bwa-startup/internal/repository/user"
 	"sync"
 
@@ -14,16 +14,16 @@ var (
 	userRepository     user.Repository
 	userRepositoryOnce sync.Once
 
-	JwtRepository     jwt.Repository
-	JwtRepositoryOnce sync.Once
+	authRepository     auth.Repository
+	authRepositoryOnce sync.Once
 
-	CampaignRepository     campaign.Repository
-	CampaignRepositoryOnce sync.Once
+	campaignRepository     campaign.Repository
+	campaignRepositoryOnce sync.Once
 )
 
 type Repository interface {
 	UserRepository() user.Repository
-	JwtRepository() jwt.Repository
+	AuthRepository() auth.Repository
 	CampaignRepository() campaign.Repository
 }
 
@@ -40,20 +40,20 @@ func (r *repoManagerImpl) UserRepository() user.Repository {
 	return userRepository
 }
 
-// JwtRepository implements Repository.
-func (r *repoManagerImpl) JwtRepository() jwt.Repository {
-	JwtRepositoryOnce.Do(func() {
-		JwtRepository = jwt.NewJWT(r.cfg.AuthConf())
+// AuthRepository implements Repository.
+func (r *repoManagerImpl) AuthRepository() auth.Repository {
+	authRepositoryOnce.Do(func() {
+		authRepository = auth.NewAuth(r.cfg.AuthConf())
 	})
-	return JwtRepository
+	return authRepository
 }
 
 // CampaignRepository implements Repository.
 func (r *repoManagerImpl) CampaignRepository() campaign.Repository {
-	CampaignRepositoryOnce.Do(func() {
-		CampaignRepository = campaign.NewRepository(r.db)
+	campaignRepositoryOnce.Do(func() {
+		campaignRepository = campaign.NewRepository(r.db)
 	})
-	return CampaignRepository
+	return campaignRepository
 }
 
 func NewRepoManagerImpl(cfg config.Config, db *gorm.DB) Repository {

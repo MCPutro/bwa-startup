@@ -2,13 +2,13 @@ package middleware
 
 import (
 	"bwa-startup/internal/handler/response"
-	"bwa-startup/internal/repository/jwt"
+	"bwa-startup/internal/repository/auth"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 )
 
-func New(jwtRepository jwt.Repository) gin.HandlerFunc {
+func New(jwtRepository auth.Repository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 
@@ -17,7 +17,7 @@ func New(jwtRepository jwt.Repository) gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, response.New{
 				Success:      false,
 				Code:         http.StatusUnauthorized,
-				ErrorMessage: "Authorization header is required",
+				ErrorMessage: "authorization header is required",
 			})
 
 			c.Abort()
@@ -26,7 +26,7 @@ func New(jwtRepository jwt.Repository) gin.HandlerFunc {
 
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
-		token2, err := jwtRepository.ValidateJWT(tokenString)
+		token2, err := jwtRepository.ValidateToken(tokenString)
 		if err != nil {
 			//c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.JSON(http.StatusUnauthorized, response.New{
@@ -44,7 +44,7 @@ func New(jwtRepository jwt.Repository) gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, response.New{
 				Success:      false,
 				Code:         http.StatusUnauthorized,
-				ErrorMessage: "Invalid JWT token",
+				ErrorMessage: "invalid token",
 			})
 			c.Abort()
 			return
