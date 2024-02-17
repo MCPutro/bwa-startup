@@ -38,3 +38,7 @@ func (u *User) GetUrlAvatar(bucket string) string {
 	}
 	return urlAvatar
 }
+
+func (u *User) TableName() string {
+	return "users"
+}

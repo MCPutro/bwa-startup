@@ -10,3 +10,7 @@ type CampaignImage struct {
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 }
+
+func (i *CampaignImage) TableName() string {
+	return "campaign_images"
+}

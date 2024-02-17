@@ -23,6 +23,10 @@ type Campaign struct {
 	User            User
 }
 
+func (c *Campaign) TableName() string {
+	return "campaigns"
+}
+
 func (c *Campaign) ToCampaignDetailResp(bucket string) *response.CampaignDetail {
 	url := ""
 	var listImage []string
