@@ -19,7 +19,7 @@ func RegisterRoute(r *gin.Engine, service service.Service, repo repository.Repos
 
 	apiPublic := r.Group("/api/v1")
 
-	userHandler := user.NewHandler(service.UserService(), service.FirebaseService())
+	userHandler := user.NewHandler(service.UserService())
 
 	authMiddleware := middleware.New(repo.AuthRepository())
 

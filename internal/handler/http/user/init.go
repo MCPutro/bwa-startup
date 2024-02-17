@@ -3,7 +3,6 @@ package user
 import (
 	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
-	"bwa-startup/internal/service/firebase"
 	"bwa-startup/internal/service/user"
 	"fmt"
 	"net/http"
@@ -13,8 +12,7 @@ import (
 )
 
 type handlerImpl struct {
-	service  user.Service
-	firebase firebase.Service
+	service user.Service
 }
 
 // Login implements Handler.
@@ -135,7 +133,7 @@ func (h *handlerImpl) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.firebase.UploadImage(c.Request.Context(), unitID, file, uploadedFileHeader)
+	resp, err := h.service.UploadAvatar(c.Request.Context(), unitID, file, uploadedFileHeader)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.New{
 			Success: false,
@@ -152,9 +150,8 @@ func (h *handlerImpl) UploadAvatar(c *gin.Context) {
 	})
 }
 
-func NewHandler(service user.Service, firebase firebase.Service) Handler {
+func NewHandler(service user.Service) Handler {
 	return &handlerImpl{
-		service:  service,
-		firebase: firebase,
+		service: service,
 	}
 }

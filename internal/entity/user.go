@@ -21,16 +21,20 @@ type User struct {
 }
 
 func (u *User) ToUserResponse(bucket string, token string) *response.User {
-	var urlAvatar string
-	if u.Image != "" && u.ImageToken != "" {
-		urlAvatar = fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", bucket, url.PathEscape(u.Image), u.ImageToken)
-	}
 	return &response.User{
 		ID:         u.ID,
 		Name:       u.Name,
 		Occupation: u.Occupation,
-		Avatar:     urlAvatar,
+		Avatar:     u.GetUrlAvatar(bucket),
 		Email:      u.Email,
 		Token:      token,
 	}
+}
+
+func (u *User) GetUrlAvatar(bucket string) string {
+	var urlAvatar string
+	if u.Image != "" && u.ImageToken != "" {
+		urlAvatar = fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", bucket, url.PathEscape(u.Image), u.ImageToken)
+	}
+	return urlAvatar
 }

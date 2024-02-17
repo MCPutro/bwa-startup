@@ -9,4 +9,5 @@ func CampaignRoute(group *gin.RouterGroup, handler campaign.Handler, middleware 
 	route := group.Group("/campaign")
 
 	route.GET("", middleware, handler.GetCampaign)
+	route.GET("/:campaignId", middleware, handler.GetCampaignById)
 }

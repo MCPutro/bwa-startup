@@ -2,6 +2,7 @@ package entity
 
 import (
 	"bwa-startup/internal/handler/response"
+	"strings"
 	"time"
 )
 
@@ -19,6 +20,36 @@ type Campaign struct {
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 	CampaignImages  []CampaignImage
+	User            User
+}
+
+func (c *Campaign) ToCampaignDetailResp(bucket string) *response.CampaignDetail {
+	url := ""
+	var listImage []string
+	for i := 0; i < len(c.CampaignImages); i++ {
+		listImage = append(listImage, c.CampaignImages[i].Filename)
+		if c.CampaignImages[i].IsPrimary == true && url == "" {
+			url = c.CampaignImages[i].Filename
+			//break
+			//continue
+		}
+
+	}
+
+	return &response.CampaignDetail{
+		Id:               c.ID,
+		Title:            c.Name,
+		ShortDescription: c.SortDescription,
+		Description:      c.Description,
+		ImageUrl:         url,
+		GoalAmount:       c.GoalAmount,
+		CurrentAmount:    c.CurrentAmount,
+		UserId:           c.User.ID,
+		UserName:         c.User.Name,
+		UserAvatar:       c.User.GetUrlAvatar(bucket),
+		Perks:            strings.Split(c.Perks, "|"),
+		Image:            listImage,
+	}
 }
 
 func (c *Campaign) ToRespCampaign() *response.Campaign {
@@ -29,12 +60,10 @@ func (c *Campaign) ToRespCampaign() *response.Campaign {
 			break
 		}
 	}
-
 	return &response.Campaign{
 		Id:               c.ID,
 		Title:            c.Name,
 		ShortDescription: c.SortDescription,
-		Description:      c.Description,
 		GoalAmount:       c.GoalAmount,
 		CurrentAmount:    c.CurrentAmount,
 		UserId:           c.UserId,

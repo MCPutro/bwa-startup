@@ -31,6 +31,18 @@ func (c *campaignImpl) FindByUserId(ctx context.Context, userId int) (entity.Cam
 	return campaigns, nil
 }
 
+func (c *campaignImpl) FindById(ctx context.Context, userId, campaignId int) (*entity.Campaign, error) {
+
+	campaign := entity.Campaign{}
+
+	err := c.db.WithContext(ctx).Where("id = ? and user_id = ?", campaignId, userId).Preload("User").Preload("CampaignImages").Find(&campaign).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &campaign, nil
+}
+
 func NewRepository(db *gorm.DB) Repository {
 	return &campaignImpl{db: db}
 }
