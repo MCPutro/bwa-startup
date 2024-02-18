@@ -38,7 +38,7 @@ func (s *serviceManagerImpl) UserService() user.Service {
 
 func (s *serviceManagerImpl) CampaignService() campaign.Service {
 	campaignServiceOnce.Do(func() {
-		campaignService = campaign.NewService(s.conf.FirebaseConf(), s.repo.CampaignRepository())
+		campaignService = campaign.NewService(s.conf.FirebaseConf(), s.repo.CampaignRepository(), s.repo.UserRepository())
 	})
 	return campaignService
 }

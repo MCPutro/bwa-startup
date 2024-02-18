@@ -37,7 +37,14 @@ func (c *Campaign) ToCampaignDetailResp(bucket string) *response.CampaignDetail 
 			//break
 			//continue
 		}
+	}
 
+	var username, avatar string
+	var userId int
+	if c.User != (User{}) {
+		userId = c.User.ID
+		username = c.User.Name
+		avatar = c.User.GetUrlAvatar(bucket)
 	}
 
 	return &response.CampaignDetail{
@@ -48,9 +55,9 @@ func (c *Campaign) ToCampaignDetailResp(bucket string) *response.CampaignDetail 
 		ImageUrl:         url,
 		GoalAmount:       c.GoalAmount,
 		CurrentAmount:    c.CurrentAmount,
-		UserId:           c.User.ID,
-		UserName:         c.User.Name,
-		UserAvatar:       c.User.GetUrlAvatar(bucket),
+		UserId:           userId,   //c.User.ID,
+		UserName:         username, //c.User.Name,
+		UserAvatar:       avatar,   //c.User.GetUrlAvatar(bucket),
 		Perks:            strings.Split(c.Perks, "|"),
 		Image:            listImage,
 	}

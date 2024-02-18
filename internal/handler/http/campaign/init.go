@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
 	"bwa-startup/internal/service/campaign"
 	"fmt"
@@ -78,6 +79,47 @@ func (h *handlerImpl) GetCampaignById(c *gin.Context) {
 		Success: true,
 		Code:    http.StatusOK,
 		Data:    campaignDetail,
+	})
+}
+
+func (h *handlerImpl) CreateCampaign(c *gin.Context) {
+	userIDInterface, _ := c.Get("userID")
+	userIdString := fmt.Sprint(userIDInterface)
+	userId, err := strconv.Atoi(userIdString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+			"error":   true,
+		})
+		return
+	}
+
+	//request
+	body := request.Campaign{}
+	err = c.ShouldBindJSON(&body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.New{
+			Success: false,
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		})
+		return
+	}
+	body.UserId = userId
+
+	createCampaign, err := h.service.CreateCampaign(c.Request.Context(), &body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"error":   true,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.New{
+		Success: true,
+		Code:    http.StatusOK,
+		Data:    createCampaign,
 	})
 }
 

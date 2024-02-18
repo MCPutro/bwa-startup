@@ -43,6 +43,15 @@ func (c *campaignImpl) FindById(ctx context.Context, userId, campaignId int) (*e
 	return &campaign, nil
 }
 
+func (c *campaignImpl) Save(ctx context.Context, campaign *entity.Campaign) (*entity.Campaign, error) {
+	err := c.db.WithContext(ctx).Create(campaign).Error
+	if err != nil {
+		return nil, err
+	}
+	
+	return campaign, nil
+}
+
 func NewRepository(db *gorm.DB) Repository {
 	return &campaignImpl{db: db}
 }
