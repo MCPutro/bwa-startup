@@ -11,4 +11,5 @@ func CampaignRoute(group *gin.RouterGroup, handler campaign.Handler, middleware 
 	route.GET("", middleware, handler.GetCampaign)
 	route.GET("/:campaignId", middleware, handler.GetCampaignById)
 	route.POST("", middleware, handler.CreateCampaign)
+	route.PUT("/:campaignId", middleware, handler.UpdateCampaign)
 }

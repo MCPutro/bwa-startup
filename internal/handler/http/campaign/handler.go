@@ -7,4 +7,5 @@ type Handler interface {
 	GetCampaign(c *gin.Context)
 	GetCampaignById(c *gin.Context)
 	CreateCampaign(c *gin.Context)
+	UpdateCampaign(c *gin.Context)
 }

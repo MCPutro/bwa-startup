@@ -50,7 +50,7 @@ func (ur *repositoryImpl) FindAll(ctx context.Context) ([]*entity.User, error) {
 // FindByEmail implements Repository.
 func (ur *repositoryImpl) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
-	err := ur.db.WithContext(ctx).Where("email = ?", email).Find(&user).Error
+	err := ur.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
