@@ -105,7 +105,7 @@ func (us *userServiceImpl) UploadAvatar(ctx context.Context, userId int, uploade
 	//validate file type
 	contentType := uploadedFileHeader.Header.Get("Content-Type")
 	splitContentType := strings.Split(contentType, "/")
-	if strings.ToUpper(splitContentType[0]) != "IMAGE" && !us.config.ImageSupport()[strings.ToLower(splitContentType[1])] {
+	if strings.ToUpper(splitContentType[0]) != "IMAGE" && !us.config.ImageConf().SupportType(strings.ToLower(splitContentType[1])) {
 		return nil, errors.New("unsupported image type")
 	}
 

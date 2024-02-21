@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"sync"
 
@@ -11,7 +12,6 @@ import (
 var (
 	conf       *configImpl
 	configOnce sync.Once
-	imageType  map[string]bool
 )
 
 type Config interface {
@@ -19,20 +19,20 @@ type Config interface {
 	FirebaseConf() FirebaseConfig
 	DatabaseConf() *Database
 	ServerConf() *Server
-	ImageSupport() map[string]bool
+	ImageConf() ImageConf
 }
 
 type configImpl struct {
-	Server    Server   `mapstructure:"server"`
-	Database  Database `mapstructure:"database"`
-	Firebase  Firebase `mapstructure:"firebase"`
-	Jwt       JWT      `mapstructure:"jwt"`
-	ImageType []string `mapstructure:"image-type-support"`
+	Server   Server   `mapstructure:"server"`
+	Database Database `mapstructure:"database"`
+	Firebase Firebase `mapstructure:"firebase"`
+	Jwt      JWT      `mapstructure:"jwt"`
+	Image    Image    `mapstructure:"image"`
 }
 
 func NewConfig() Config {
-
 	configOnce.Do(func() {
+		log.Println("Loading variables is started")
 		envMode := os.Getenv("ENV_MODE")
 		if envMode == "" {
 			envMode = "develop"
@@ -53,10 +53,11 @@ func NewConfig() Config {
 			panic(fmt.Errorf("failed to unmarshal config: %s", err))
 		}
 
-		imageType = map[string]bool{}
-		for _, s := range conf.ImageType {
-			imageType[s] = true
+		conf.Image.MapImageType = map[string]bool{}
+		for _, s := range conf.Image.ImageType {
+			conf.Image.MapImageType[s] = true
 		}
+		log.Println("Loading variables is completed")
 	})
 
 	return conf
@@ -78,7 +79,6 @@ func (c *configImpl) ServerConf() *Server {
 	return &c.Server
 }
 
-func (c *configImpl) ImageSupport() map[string]bool {
-	return imageType
-	//return c.ImageType
+func (c *configImpl) ImageConf() ImageConf {
+	return &c.Image
 }

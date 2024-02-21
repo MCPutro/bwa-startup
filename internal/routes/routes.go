@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"bwa-startup/config"
 	"bwa-startup/internal/handler/http/campaign"
 	"bwa-startup/internal/handler/http/user"
 	"bwa-startup/internal/middleware"
@@ -11,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoute(r *gin.Engine, service service.Service, repo repository.Repository) {
+func RegisterRoute(r *gin.Engine, service service.Service, repo repository.Repository, config config.Config) {
 	route := r.Group("/")
 	route.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, "OK")
@@ -19,7 +20,7 @@ func RegisterRoute(r *gin.Engine, service service.Service, repo repository.Repos
 
 	apiPublic := r.Group("/api/v1")
 
-	userHandler := user.NewHandler(service.UserService())
+	userHandler := user.NewHandler(service.UserService(), config.ImageConf())
 
 	authMiddleware := middleware.New(repo.AuthRepository())
 

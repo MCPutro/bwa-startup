@@ -25,7 +25,7 @@ func main() {
 	repo := repository.NewRepoManagerImpl(cfg, db)
 	services := service.NewServiceManagerImpl(cfg, repo)
 
-	routes.RegisterRoute(r, services, repo)
+	routes.RegisterRoute(r, services, repo, cfg)
 
 	r.Run(":" + cfg.ServerConf().Port)
 
