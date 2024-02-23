@@ -168,6 +168,52 @@ func (h *handlerImpl) UpdateCampaign(c *gin.Context) {
 
 }
 
+func (h *handlerImpl) UploadImage(c *gin.Context) {
+	userIDInterface, _ := c.Get("userID")
+	userIdString := fmt.Sprint(userIDInterface)
+	userId, err := strconv.Atoi(userIdString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+			"error":   true,
+		})
+		return
+	}
+
+	campaignIdString := c.Param("campaignId")
+	campaignId, err := strconv.Atoi(campaignIdString)
+
+	isPrimary, err := strconv.ParseBool(c.Request.FormValue("is_primary"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+			"error":   true,
+		})
+		return
+	}
+
+	fmt.Println(">>>>", isPrimary)
+
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"error":   true,
+		})
+		return
+	}
+	defer file.Close()
+
+	h.service.UploadImage(c.Request.Context(), userId, campaignId, file, header, isPrimary)
+
+	c.JSON(http.StatusOK, response.New{
+		Success: true,
+		Code:    http.StatusOK,
+		Message: strconv.Itoa(userId),
+		Data:    campaignId,
+	})
+}
+
 func NewHandler(service campaign.Service) Handler {
 	return &handlerImpl{service: service}
 }

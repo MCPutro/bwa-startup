@@ -69,9 +69,21 @@ func (c *campaignImpl) Update(ctx context.Context, campaign *entity.Campaign) (*
 	return campaign, nil
 }
 
-func (c *campaignImpl) CreateImage(ctx context.Context, image *entity.CampaignImage) (entity.CampaignImage, error) {
-	//TODO implement me
-	panic("implement me")
+func (c *campaignImpl) CreateImage(ctx context.Context, image *entity.CampaignImage) (*entity.CampaignImage, error) {
+	//check new image is primary or not
+	if image.IsPrimary {
+		err := c.db.WithContext(ctx).Model(&entity.CampaignImage{}).Where("campaign_id", image.CampaignID).Update("is_primary", false).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err := c.db.WithContext(ctx).Create(&image).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return image, nil
 }
 
 func NewRepository(db *gorm.DB) Repository {

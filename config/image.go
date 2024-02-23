@@ -1,8 +1,9 @@
 package config
 
 type ImageConf interface {
-	SupportType(t string) bool
+	IsSupport(t string) bool
 	MaxAvatarSize() int64
+	SupportType() map[string]bool
 }
 
 type Image struct {
@@ -15,6 +16,10 @@ func (c *Image) MaxAvatarSize() int64 {
 	return c.MaxAvatar << 20
 }
 
-func (c *Image) SupportType(t string) bool {
+func (c *Image) IsSupport(t string) bool {
 	return c.MapImageType[t]
+}
+
+func (c *Image) SupportType() map[string]bool {
+	return c.MapImageType
 }

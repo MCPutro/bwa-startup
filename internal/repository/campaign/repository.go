@@ -11,5 +11,5 @@ type Repository interface {
 	FindById(ctx context.Context, userId, campaignId int) (*entity.Campaign, error)
 	Save(ctx context.Context, campaign *entity.Campaign) (*entity.Campaign, error)
 	Update(ctx context.Context, campaign *entity.Campaign) (*entity.Campaign, error)
-	CreateImage(ctx context.Context, image *entity.CampaignImage) (entity.CampaignImage, error)
+	CreateImage(ctx context.Context, image *entity.CampaignImage) (*entity.CampaignImage, error)
 }

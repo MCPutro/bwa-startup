@@ -2,6 +2,8 @@ package campaign
 
 import (
 	"bwa-startup/config"
+	"bwa-startup/internal/common"
+	"bwa-startup/internal/entity"
 	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
 	"bwa-startup/internal/repository/campaign"
@@ -9,14 +11,17 @@ import (
 	"bwa-startup/internal/repository/user"
 	"context"
 	"errors"
+	"fmt"
+	"mime/multipart"
 	"time"
 )
 
 type campaignServiceImpl struct {
-	campaign campaign.Repository
-	user     user.Repository
-	firebase firebase.Repository
-	cfg      config.FirebaseConfig
+	campaign     campaign.Repository
+	user         user.Repository
+	firebase     firebase.Repository
+	config       config.Config
+	firebaseConf config.FirebaseConfig
 }
 
 func (s *campaignServiceImpl) GetCampaignByUserId(ctx context.Context, userId int) ([]*response.Campaign, error) {
@@ -43,7 +48,7 @@ func (s *campaignServiceImpl) GetCampaignDetailById(ctx context.Context, userId,
 		return nil, err
 	}
 
-	return campaignById.ToCampaignDetailResp(s.cfg.BucketName()), nil
+	return campaignById.ToCampaignDetailResp(s.firebaseConf.BucketName()), nil
 }
 
 func (s *campaignServiceImpl) CreateCampaign(ctx context.Context, campaign *request.Campaign) (*response.CampaignDetail, error) {
@@ -60,7 +65,7 @@ func (s *campaignServiceImpl) CreateCampaign(ctx context.Context, campaign *requ
 
 	save.User = *existingUser
 
-	return save.ToCampaignDetailResp(s.cfg.BucketName()), nil
+	return save.ToCampaignDetailResp(s.firebaseConf.BucketName()), nil
 }
 
 func (s *campaignServiceImpl) UpdateCampaign(ctx context.Context, campaignId int, newCampaign *request.Campaign) (*response.CampaignDetail, error) {
@@ -82,14 +87,43 @@ func (s *campaignServiceImpl) UpdateCampaign(ctx context.Context, campaignId int
 		return nil, err
 	}
 
-	return updatedCampaign.ToCampaignDetailResp(s.cfg.BucketName()), nil
+	return updatedCampaign.ToCampaignDetailResp(s.firebaseConf.BucketName()), nil
 }
 
-func NewService(cfg config.FirebaseConfig, repo campaign.Repository, user user.Repository, firebase firebase.Repository) Service {
+func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignId int, file multipart.File, fileHeader *multipart.FileHeader, isPrimary bool) error {
+	//check content type
+	if !common.IsSupportedImageType(s.config.ImageConf().SupportType(), fileHeader.Header.Get("Content-Type")) {
+		return errors.New("unsupported image type")
+	}
+
+	//upload to firebase
+	imagePath := fmt.Sprint(s.firebaseConf.BucketPath(), "/campaigns/", campaignId, "/", fileHeader.Filename)
+
+	uploadFile, err := s.firebase.UploadFile(ctx, file, imagePath)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(">>>", uploadFile)
+
+	//update database
+	campaignImage := entity.CampaignImage{
+		CampaignID: campaignId,
+		Filename:   imagePath + "?alt=media&token=" + uploadFile,
+		IsPrimary:  isPrimary,
+	}
+	//
+	s.campaign.CreateImage(ctx, &campaignImage)
+
+	return nil
+}
+
+func NewService(cfg config.Config, repo campaign.Repository, user user.Repository, firebase firebase.Repository) Service {
 	return &campaignServiceImpl{
-		campaign: repo,
-		user:     user,
-		firebase: firebase,
-		cfg:      cfg,
+		campaign:     repo,
+		user:         user,
+		firebase:     firebase,
+		config:       cfg,
+		firebaseConf: cfg.FirebaseConf(),
 	}
 }

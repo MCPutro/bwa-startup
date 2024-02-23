@@ -2,6 +2,7 @@ package user
 
 import (
 	"bwa-startup/config"
+	"bwa-startup/internal/common"
 	"bwa-startup/internal/entity"
 	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
@@ -11,10 +12,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"mime/multipart"
 	"strings"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type userServiceImpl struct {
@@ -101,11 +101,9 @@ func (us *userServiceImpl) IsEmailAvailable(ctx context.Context, email string) (
 }
 
 // UploadAvatar implements Service.
-func (us *userServiceImpl) UploadAvatar(ctx context.Context, userId int, uploadedFile multipart.File, uploadedFileHeader *multipart.FileHeader) (*response.User, error) {
-	//validate file type
-	contentType := uploadedFileHeader.Header.Get("Content-Type")
-	splitContentType := strings.Split(contentType, "/")
-	if strings.ToUpper(splitContentType[0]) != "IMAGE" && !us.config.ImageConf().SupportType(strings.ToLower(splitContentType[1])) {
+func (us *userServiceImpl) UploadAvatar(ctx context.Context, userId int, file multipart.File, fileHeader *multipart.FileHeader) (*response.User, error) {
+	//validate file type from content type
+	if !common.IsSupportedImageType(us.config.ImageConf().SupportType(), fileHeader.Header.Get("Content-Type")) {
 		return nil, errors.New("unsupported image type")
 	}
 
@@ -116,8 +114,8 @@ func (us *userServiceImpl) UploadAvatar(ctx context.Context, userId int, uploade
 	}
 
 	//upload file
-	imagePath := fmt.Sprint(us.config.FirebaseConf().BucketPath(), "/users/", userId, "/avatar/", userId, "-avatar.", strings.Split(uploadedFileHeader.Filename, ".")[1])
-	token, err := us.firebase.UploadFile(ctx, uploadedFile, imagePath)
+	imagePath := fmt.Sprint(us.config.FirebaseConf().BucketPath(), "/users/", userId, "/avatar/", userId, "-avatar.", strings.Split(fileHeader.Filename, ".")[1])
+	token, err := us.firebase.UploadFile(ctx, file, imagePath)
 	if err != nil {
 		return nil, err
 	}

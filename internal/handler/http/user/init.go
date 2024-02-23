@@ -126,7 +126,6 @@ func (h *handlerImpl) UploadAvatar(c *gin.Context) {
 
 	//get file from req
 	file, uploadedFileHeader, err := c.Request.FormFile("file")
-	defer file.Close()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
@@ -134,6 +133,7 @@ func (h *handlerImpl) UploadAvatar(c *gin.Context) {
 		})
 		return
 	}
+	defer file.Close()
 
 	//check file size
 	if uploadedFileHeader.Size >= h.image.MaxAvatarSize() {

@@ -8,4 +8,5 @@ type Handler interface {
 	GetCampaignById(c *gin.Context)
 	CreateCampaign(c *gin.Context)
 	UpdateCampaign(c *gin.Context)
+	UploadImage(c *gin.Context)
 }
