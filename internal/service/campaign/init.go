@@ -96,24 +96,29 @@ func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignI
 		return errors.New("unsupported image type")
 	}
 
+	//check user id and campaign id
+	existingCampaign, _ := s.campaign.FindById(ctx, userId, campaignId)
+	if existingCampaign == nil {
+		return errors.New("campaign not found")
+	}
+
 	//upload to firebase
 	imagePath := fmt.Sprint(s.firebaseConf.BucketPath(), "/campaigns/", campaignId, "/", fileHeader.Filename)
-
-	uploadFile, err := s.firebase.UploadFile(ctx, file, imagePath)
+	tokenFile, err := s.firebase.UploadFile(ctx, file, imagePath)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(">>>", uploadFile)
-
 	//update database
 	campaignImage := entity.CampaignImage{
 		CampaignID: campaignId,
-		Filename:   imagePath + "?alt=media&token=" + uploadFile,
+		Filename:   imagePath + "?alt=media&token=" + tokenFile,
 		IsPrimary:  isPrimary,
 	}
-	//
-	s.campaign.CreateImage(ctx, &campaignImage)
+	err = s.campaign.CreateImage(ctx, &campaignImage)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

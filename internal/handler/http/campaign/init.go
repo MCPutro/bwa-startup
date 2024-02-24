@@ -192,8 +192,6 @@ func (h *handlerImpl) UploadImage(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(">>>>", isPrimary)
-
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -204,7 +202,14 @@ func (h *handlerImpl) UploadImage(c *gin.Context) {
 	}
 	defer file.Close()
 
-	h.service.UploadImage(c.Request.Context(), userId, campaignId, file, header, isPrimary)
+	err = h.service.UploadImage(c.Request.Context(), userId, campaignId, file, header, isPrimary)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+			"error":   true,
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, response.New{
 		Success: true,

@@ -104,13 +104,13 @@ func (h *handlerImpl) CheckEmailAvailable(c *gin.Context) {
 	}
 
 	if b {
-		c.JSON(http.StatusCreated, response.New{
+		c.JSON(http.StatusOK, response.New{
 			Success: true,
 			Code:    http.StatusOK,
 			Message: "email available",
 		})
 	} else {
-		c.JSON(http.StatusCreated, response.New{
+		c.JSON(http.StatusNotAcceptable, response.New{
 			Success: false,
 			Code:    http.StatusNotAcceptable,
 			Message: "email already use",
