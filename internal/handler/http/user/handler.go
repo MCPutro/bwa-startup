@@ -1,10 +1,12 @@
 package user
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 type Handler interface {
-	RegisterUser(c *gin.Context)
-	Login(c *gin.Context)
-	CheckEmailAvailable(c *gin.Context)
-	UploadAvatar(c *gin.Context)
+	RegisterUser(c *fiber.Ctx) error
+	Login(c *fiber.Ctx) error
+	CheckEmailAvailable(c *fiber.Ctx) error
+	UploadAvatar(c *fiber.Ctx) error
 }

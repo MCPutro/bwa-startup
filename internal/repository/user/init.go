@@ -1,8 +1,10 @@
 package user
 
 import (
+	newError "bwa-startup/internal/common/errors"
 	"bwa-startup/internal/entity"
 	"context"
+	"errors"
 
 	"gorm.io/gorm"
 )
@@ -11,7 +13,6 @@ type repositoryImpl struct {
 	db *gorm.DB
 }
 
-// Save implements UserRepository.
 func (ur *repositoryImpl) Save(ctx context.Context, user *entity.User) (*entity.User, error) {
 	err := ur.db.WithContext(ctx).Create(user).Error
 	if err != nil {
@@ -20,19 +21,19 @@ func (ur *repositoryImpl) Save(ctx context.Context, user *entity.User) (*entity.
 	return user, nil
 }
 
-// FindById implements UserRepository.
 func (ur *repositoryImpl) FindById(ctx context.Context, ID int) (*entity.User, error) {
 	var user entity.User
 
-	err := ur.db.WithContext(ctx).First(&user, ID).Error
-	if err != nil {
-		return nil, err
+	result := ur.db.WithContext(ctx).First(&user, ID)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, newError.ErrUserIdNotFound
+	} else if result.Error != nil {
+		return nil, result.Error
 	}
 
 	return &user, nil
 }
 
-// FindAll implements UserRepository.
 func (ur *repositoryImpl) FindAll(ctx context.Context) ([]*entity.User, error) {
 	var users []*entity.User
 
@@ -42,17 +43,22 @@ func (ur *repositoryImpl) FindAll(ctx context.Context) ([]*entity.User, error) {
 		return nil, result.Error
 	}
 
+	if result.RowsAffected > 0 {
+		return users, nil
+	}
 	// fmt.Println("Found ", result.RowsAffected, "(s) data")
 
-	return users, nil
+	return nil, nil
 }
 
-// FindByEmail implements Repository.
 func (ur *repositoryImpl) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
-	err := ur.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
-	if err != nil {
-		return nil, err
+
+	result := ur.db.WithContext(ctx).Where("email = ?", email).First(&user)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, newError.ErrEmailNotFound
+	} else if result.Error != nil {
+		return nil, result.Error
 	}
 
 	return &user, nil

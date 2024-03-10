@@ -2,14 +2,13 @@ package user
 
 import (
 	"bwa-startup/config"
+	"bwa-startup/internal/common"
+	newError "bwa-startup/internal/common/errors"
 	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
 	"bwa-startup/internal/service/user"
-	"fmt"
+	"github.com/gofiber/fiber/v2"
 	"net/http"
-	"strconv"
-
-	"github.com/gin-gonic/gin"
 )
 
 type handlerImpl struct {
@@ -17,61 +16,59 @@ type handlerImpl struct {
 	image   config.ImageConf
 }
 
-// Login implements Handler.
-func (h *handlerImpl) Login(c *gin.Context) {
+func (h *handlerImpl) Login(c *fiber.Ctx) error {
 	var body request.UserLogin
-	err := c.ShouldBindJSON(&body)
+	err := c.BodyParser(&body)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.New{
+		return c.Status(newError.StatusCode(err.Error())).JSON(response.New{
 			Success: false,
-			Code:    http.StatusBadRequest,
+			Code:    newError.StatusCode(err.Error()),
 			Message: err.Error(),
 		})
-		return
+
 	}
 
-	u, err := h.service.Login(c.Request.Context(), &body)
+	u, err := h.service.Login(c.Context(), &body)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.New{
+		return c.Status(newError.StatusCode(err.Error())).JSON(response.New{
 			Success: false,
-			Code:    http.StatusBadRequest,
+			Code:    newError.StatusCode(err.Error()),
 			Message: err.Error(),
 		})
-		return
+
 	}
 
-	c.JSON(http.StatusOK, response.New{
+	return c.Status(http.StatusOK).JSON(response.New{
 		Success: true,
 		Code:    http.StatusOK,
 		Data:    u,
 	})
 }
 
-// RegisterUser implements Handler.
-func (h *handlerImpl) RegisterUser(c *gin.Context) {
+func (h *handlerImpl) RegisterUser(c *fiber.Ctx) error {
 	body := request.RegisterUser{}
 
-	err := c.ShouldBindJSON(&body)
+	err := c.BodyParser(&body)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.New{
+		return c.Status(http.StatusBadRequest).JSON(response.New{
 			Success: false,
 			Code:    http.StatusBadRequest,
 			Message: err.Error(),
 		})
-		return
+
 	}
 
-	u, err := h.service.Register(c.Request.Context(), &body)
+	u, err := h.service.Register(c.Context(), &body)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.New{
+		return c.Status(newError.StatusCode(err.Error())).JSON(response.New{
 			Success: false,
-			Code:    http.StatusInternalServerError,
+			Code:    newError.StatusCode(err.Error()),
 			Message: err.Error(),
 		})
-		return
+
 	}
 
-	c.JSON(http.StatusCreated, response.New{
+	return c.Status(http.StatusCreated).JSON(response.New{
 		Success: true,
 		Code:    http.StatusCreated,
 		Data:    u,
@@ -79,38 +76,37 @@ func (h *handlerImpl) RegisterUser(c *gin.Context) {
 
 }
 
-// CheckEmailAvailable implements Handler.
-func (h *handlerImpl) CheckEmailAvailable(c *gin.Context) {
+func (h *handlerImpl) CheckEmailAvailable(c *fiber.Ctx) error {
 	var body request.UserLogin
 
-	err := c.ShouldBindJSON(&body)
+	err := c.BodyParser(&body)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.New{
+		return c.Status(http.StatusBadRequest).JSON(response.New{
 			Success: false,
 			Code:    http.StatusBadRequest,
 			Message: err.Error(),
 		})
-		return
+
 	}
 
-	b, err := h.service.IsEmailAvailable(c.Request.Context(), body.Email)
+	b, err := h.service.IsEmailAvailable(c.Context(), body.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.New{
+		return c.Status(http.StatusInternalServerError).JSON(response.New{
 			Success: false,
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
 		})
-		return
+
 	}
 
 	if b {
-		c.JSON(http.StatusOK, response.New{
+		return c.Status(http.StatusOK).JSON(response.New{
 			Success: true,
 			Code:    http.StatusOK,
 			Message: "email available",
 		})
 	} else {
-		c.JSON(http.StatusNotAcceptable, response.New{
+		return c.Status(http.StatusNotAcceptable).JSON(response.New{
 			Success: false,
 			Code:    http.StatusNotAcceptable,
 			Message: "email already use",
@@ -118,43 +114,46 @@ func (h *handlerImpl) CheckEmailAvailable(c *gin.Context) {
 	}
 }
 
-// UploadAvatar implements Handler.
-func (h *handlerImpl) UploadAvatar(c *gin.Context) {
-	userIDInterface, _ := c.Get("userID")
-	userID := fmt.Sprint(userIDInterface)
-	unitID, err := strconv.Atoi(userID)
+func (h *handlerImpl) UploadAvatar(c *fiber.Ctx) error {
+	userId := common.GetUserId(c.Locals("userID"))
 
 	//get file from req
-	file, uploadedFileHeader, err := c.Request.FormFile("file")
+
+	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err.Error(),
-			"error":   true,
+		return c.Status(http.StatusBadRequest).JSON(response.New{
+			Success:     false,
+			Code:        http.StatusBadRequest,
+			Message:     err.Error(),
+			ErrorDetail: nil,
+			Data:        nil,
 		})
-		return
+
 	}
-	defer file.Close()
 
 	//check file size
-	if uploadedFileHeader.Size >= h.image.MaxAvatarSize() {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "file size limit exceeded",
-			"error":   true,
+	if file.Size >= h.image.MaxAvatarSize() {
+		return c.Status(http.StatusBadRequest).JSON(response.New{
+			Success:     false,
+			Code:        http.StatusBadRequest,
+			Message:     "file size limit exceeded",
+			ErrorDetail: nil,
+			Data:        nil,
 		})
-		return
 	}
 
-	resp, err := h.service.UploadAvatar(c.Request.Context(), unitID, file, uploadedFileHeader)
+	//upload file
+	resp, err := h.service.UploadAvatar(c.Context(), userId, file)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, response.New{
+		return c.Status(http.StatusInternalServerError).JSON(response.New{
 			Success: false,
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
 		})
-		return
+
 	}
 
-	c.JSON(http.StatusCreated, response.New{
+	return c.Status(http.StatusCreated).JSON(response.New{
 		Success: true,
 		Code:    http.StatusOK,
 		Data:    resp,

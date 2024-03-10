@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	newError "bwa-startup/internal/common/errors"
 	"bwa-startup/internal/entity"
 	"context"
 	"gorm.io/gorm"
@@ -32,7 +33,7 @@ func (c *campaignImpl) FindByUserId(ctx context.Context, userId int) (entity.Cam
 		return campaigns, nil
 	}
 
-	return nil, nil
+	return nil, newError.ErrNotFound
 }
 
 func (c *campaignImpl) FindById(ctx context.Context, userId, campaignId int) (*entity.Campaign, error) {
@@ -47,7 +48,7 @@ func (c *campaignImpl) FindById(ctx context.Context, userId, campaignId int) (*e
 		return &campaign, nil
 	}
 
-	return nil, nil
+	return nil, newError.ErrNotFound
 
 }
 

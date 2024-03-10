@@ -2,33 +2,33 @@ package routes
 
 import (
 	"bwa-startup/config"
+	"bwa-startup/internal/app"
 	"bwa-startup/internal/handler/http/campaign"
 	"bwa-startup/internal/handler/http/user"
 	"bwa-startup/internal/middleware"
 	"bwa-startup/internal/repository"
 	"bwa-startup/internal/service"
+	"github.com/gofiber/fiber/v2"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoute(r *gin.Engine, service service.Service, repo repository.Repository, config config.Config) {
+func RegisterRoute(r *app.Server, service service.Service, repo repository.Repository, config config.Config) {
 	route := r.Group("/")
-	route.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, "OK")
+	route.Get("/", func(c *fiber.Ctx) error {
+		return c.Status(http.StatusOK).SendString("OK")
 	})
 
-	apiPublic := r.Group("/api/v1")
+	api := r.Group("/api/v1")
 
 	userHandler := user.NewHandler(service.UserService(), config.ImageConf())
 
 	authMiddleware := middleware.New(repo.AuthRepository())
 
-	UserRoutePublic(apiPublic, userHandler)
+	UserRoutePublic(api, userHandler)
 
 	//with middleware
-	UserRoutePrivate(apiPublic, userHandler, authMiddleware)
+	UserRoutePrivate(api, userHandler, authMiddleware)
 
 	campaignHandler := campaign.NewHandler(service.CampaignService())
-	CampaignRoute(apiPublic, campaignHandler, authMiddleware)
+	CampaignRoute(api, campaignHandler, authMiddleware)
 }

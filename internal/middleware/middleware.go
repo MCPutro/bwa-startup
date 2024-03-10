@@ -3,55 +3,46 @@ package middleware
 import (
 	"bwa-startup/internal/handler/response"
 	"bwa-startup/internal/repository/auth"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"strings"
 )
 
-func New(jwtRepository auth.Repository) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
+func New(jwtRepository auth.Repository) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		tokenString := c.Get(fiber.HeaderAuthorization)
 
 		if tokenString == "" {
-			//c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is required"})
-			c.JSON(http.StatusUnauthorized, response.New{
-				Success: false,
-				Code:    http.StatusUnauthorized,
-				Message: "authorization header is required",
-			})
-
-			c.Abort()
-			return
+			return c.Status(http.StatusUnauthorized).JSON(
+				response.New{
+					Success: false,
+					Code:    http.StatusUnauthorized,
+					Message: "authorization header is required",
+				})
 		}
 
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
 		token2, err := jwtRepository.ValidateToken(tokenString)
 		if err != nil {
-			//c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			c.JSON(http.StatusUnauthorized, response.New{
+			return c.Status(http.StatusUnauthorized).JSON(response.New{
 				Success: false,
 				Code:    http.StatusUnauthorized,
 				Message: err.Error(),
 			})
-			c.Abort()
-			return
 		}
 
 		userID, ok := token2["Id"]
 		if !ok {
-			//c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid JWT token"})
-			c.JSON(http.StatusUnauthorized, response.New{
+			return c.Status(http.StatusUnauthorized).JSON(response.New{
 				Success: false,
 				Code:    http.StatusUnauthorized,
 				Message: "invalid token",
 			})
-			c.Abort()
-			return
 		}
 
-		c.Set("userID", userID)
+		c.Locals("userID", userID)
 
-		c.Next()
+		return c.Next()
 	}
 }

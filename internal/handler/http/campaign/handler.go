@@ -1,12 +1,14 @@
 package campaign
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 type Handler interface {
-	GetAllCampaign(c *gin.Context)
-	GetCampaign(c *gin.Context)
-	GetCampaignById(c *gin.Context)
-	CreateCampaign(c *gin.Context)
-	UpdateCampaign(c *gin.Context)
-	UploadImage(c *gin.Context)
+	GetAllCampaign(c *fiber.Ctx) error
+	GetCampaign(c *fiber.Ctx) error
+	GetCampaignById(c *fiber.Ctx) error
+	CreateCampaign(c *fiber.Ctx) error
+	UpdateCampaign(c *fiber.Ctx) error
+	UploadImage(c *fiber.Ctx) error
 }

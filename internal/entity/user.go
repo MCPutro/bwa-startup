@@ -8,16 +8,16 @@ import (
 )
 
 type User struct {
-	ID         int
-	Name       string
-	Occupation string
-	Email      string
-	Password   string
-	Image      string
-	ImageToken string
-	Role       string
-	CreatedAt  time.Time `sql:"type:timestamp"`
-	UpdatedAt  time.Time `sql:"type:timestamp"`
+	ID         int       `gorm:"primary_key;column:id;<-:create"`
+	Name       string    `gorm:"column:name"`
+	Occupation string    `gorm:"column:occupation"`
+	Email      string    `gorm:"column:email"`
+	Password   string    `gorm:"column:password"`
+	Image      string    `gorm:"column:image"`
+	ImageToken string    `gorm:"column:image_token"`
+	Role       string    `gorm:"column:role"`
+	CreatedAt  time.Time `gorm:"column:created_at;autoCreateTime;<-:create"`
+	UpdatedAt  time.Time `gorm:"column:updated_at;autoCreateTime;autoUpdateTime"`
 }
 
 func (u *User) ToUserResponse(bucket string, token string) *response.User {

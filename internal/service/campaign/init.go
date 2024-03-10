@@ -26,8 +26,8 @@ type campaignServiceImpl struct {
 
 func (s *campaignServiceImpl) GetCampaignByUserId(ctx context.Context, userId int) ([]*response.Campaign, error) {
 	//check user id
-	existingUser, _ := s.user.FindById(ctx, userId)
-	if existingUser == nil {
+	_, err := s.user.FindById(ctx, userId)
+	if err == nil {
 		return nil, errors.New("user id not found")
 	}
 
@@ -90,10 +90,10 @@ func (s *campaignServiceImpl) UpdateCampaign(ctx context.Context, campaignId int
 	return updatedCampaign.ToCampaignDetailResp(s.firebaseConf.BucketName()), nil
 }
 
-func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignId int, file multipart.File, fileHeader *multipart.FileHeader, isPrimary bool) error {
+func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignId int, file *multipart.FileHeader, isPrimary bool) error {
 	//check content type
-	if !common.IsSupportedImageType(s.config.ImageConf().SupportType(), fileHeader.Header.Get("Content-Type")) {
-		return errors.New("unsupported image type")
+	if err := common.IsSupportedImageType(s.config.ImageConf().SupportType(), file.Header.Get("Content-Type")); err != nil {
+		return err
 	}
 
 	//check user id and campaign id
@@ -103,8 +103,14 @@ func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignI
 	}
 
 	//upload to firebase
-	imagePath := fmt.Sprint(s.firebaseConf.BucketPath(), "/campaigns/", campaignId, "/", fileHeader.Filename)
-	tokenFile, err := s.firebase.UploadFile(ctx, file, imagePath)
+	bufferFile, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer bufferFile.Close()
+
+	imagePath := fmt.Sprint(s.firebaseConf.BucketPath(), "/campaigns/", campaignId, "/", file.Filename)
+	tokenFile, err := s.firebase.UploadFile(ctx, bufferFile, imagePath)
 	if err != nil {
 		return err
 	}

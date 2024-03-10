@@ -2,20 +2,20 @@ package routes
 
 import (
 	"bwa-startup/internal/handler/http/user"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func UserRoutePublic(group *gin.RouterGroup, handler user.Handler) {
+func UserRoutePublic(group fiber.Router, handler user.Handler) {
 	route := group.Group("/user")
 
-	route.POST("/register", handler.RegisterUser)
-	route.POST("/login", handler.Login)
-	route.POST("/emailCheckers", handler.CheckEmailAvailable)
+	route.Post("/register", handler.RegisterUser)
+	route.Post("/login", handler.Login)
+	route.Post("/emailCheckers", handler.CheckEmailAvailable)
 
 }
 
-func UserRoutePrivate(group *gin.RouterGroup, handler user.Handler, middleware gin.HandlerFunc) {
+func UserRoutePrivate(group fiber.Router, handler user.Handler, middleware fiber.Handler) {
 	route := group.Group("/user")
 
-	route.POST("/uploadAvatar", middleware, handler.UploadAvatar)
+	route.Post("/uploadAvatar", middleware, handler.UploadAvatar)
 }

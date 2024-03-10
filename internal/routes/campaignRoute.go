@@ -2,15 +2,17 @@ package routes
 
 import (
 	"bwa-startup/internal/handler/http/campaign"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func CampaignRoute(group *gin.RouterGroup, handler campaign.Handler, middleware gin.HandlerFunc) {
+func CampaignRoute(group fiber.Router, handler campaign.Handler, middleware fiber.Handler) {
 	route := group.Group("/campaign")
 
-	route.GET("", middleware, handler.GetCampaign)
-	route.GET("/:campaignId", middleware, handler.GetCampaignById)
-	route.POST("", middleware, handler.CreateCampaign)
-	route.PUT("/:campaignId", middleware, handler.UpdateCampaign)
-	route.POST("/:campaignId/image", middleware, handler.UploadImage)
+	route.Use(middleware)
+
+	route.Get("/", handler.GetCampaign)
+	route.Get("/:campaignId", handler.GetCampaignById)
+	route.Post("/", handler.CreateCampaign)
+	route.Put("/:campaignId", handler.UpdateCampaign)
+	route.Post("/:campaignId/image", handler.UploadImage)
 }

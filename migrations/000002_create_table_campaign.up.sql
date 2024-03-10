@@ -1,4 +1,4 @@
-CREATE TABLE public.campaigns
+CREATE TABLE IF NOT EXISTS public.campaigns
 (
     id               bigserial NOT NULL,
     user_id          int8 NULL,

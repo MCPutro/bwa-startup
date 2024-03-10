@@ -3,6 +3,7 @@ package user
 import (
 	"bwa-startup/config"
 	"bwa-startup/internal/common"
+	newError "bwa-startup/internal/common/errors"
 	"bwa-startup/internal/entity"
 	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
@@ -24,7 +25,6 @@ type userServiceImpl struct {
 	firebase firebase.Repository
 }
 
-// GetAll implements Service.
 func (us *userServiceImpl) GetAll(ctx context.Context) ([]*entity.User, error) {
 	// resp = new([]entity.User)
 
@@ -36,7 +36,6 @@ func (us *userServiceImpl) GetAll(ctx context.Context) ([]*entity.User, error) {
 	return u, nil
 }
 
-// Register implements UserService.
 func (us *userServiceImpl) Register(ctx context.Context, newUser *request.RegisterUser) (*response.User, error) {
 	//check email is already register
 	isExistingUser, err := us.IsEmailAvailable(ctx, newUser.Email)
@@ -44,7 +43,7 @@ func (us *userServiceImpl) Register(ctx context.Context, newUser *request.Regist
 		return nil, err
 	}
 	if !isExistingUser {
-		return nil, errors.New("email already register")
+		return nil, newError.ErrEmailAlreadyRegister
 	}
 
 	//save new user to database
@@ -63,7 +62,6 @@ func (us *userServiceImpl) Register(ctx context.Context, newUser *request.Regist
 	return u.ToUserResponse(us.config.FirebaseConf().BucketName(), token), nil
 }
 
-// Login implements Service.
 func (us *userServiceImpl) Login(ctx context.Context, newUser *request.UserLogin) (*response.User, error) {
 	existingUser, err := us.user.FindByEmail(ctx, newUser.Email)
 	if err != nil {
@@ -73,7 +71,7 @@ func (us *userServiceImpl) Login(ctx context.Context, newUser *request.UserLogin
 	// if user is found, then check password
 	err = bcrypt.CompareHashAndPassword([]byte(existingUser.Password), []byte(newUser.Password))
 	if err != nil {
-		return nil, errors.New("email and password not match")
+		return nil, newError.ErrEmailAndPasswordNotMatch
 	}
 
 	//generate token
@@ -85,11 +83,12 @@ func (us *userServiceImpl) Login(ctx context.Context, newUser *request.UserLogin
 	return existingUser.ToUserResponse(us.config.FirebaseConf().BucketName(), token), nil
 }
 
-// IsEmailAvailable implements Service.
 func (us *userServiceImpl) IsEmailAvailable(ctx context.Context, email string) (bool, error) {
 	//get user by email
 	existingUser, err := us.user.FindByEmail(ctx, email)
-	if err != nil {
+	if errors.Is(err, newError.ErrEmailNotFound) {
+		return true, nil
+	} else if err != nil {
 		return false, err
 	}
 
@@ -100,11 +99,11 @@ func (us *userServiceImpl) IsEmailAvailable(ctx context.Context, email string) (
 	return true, nil
 }
 
-// UploadAvatar implements Service.
-func (us *userServiceImpl) UploadAvatar(ctx context.Context, userId int, file multipart.File, fileHeader *multipart.FileHeader) (*response.User, error) {
+func (us *userServiceImpl) UploadAvatar(ctx context.Context, userId int, file *multipart.FileHeader) (*response.User, error) {
 	//validate file type from content type
-	if !common.IsSupportedImageType(us.config.ImageConf().SupportType(), fileHeader.Header.Get("Content-Type")) {
-		return nil, errors.New("unsupported image type")
+
+	if err := common.IsSupportedImageType(us.config.ImageConf().SupportType(), file.Header.Get("Content-Type")); err != nil {
+		return nil, err
 	}
 
 	//check user id
@@ -113,9 +112,16 @@ func (us *userServiceImpl) UploadAvatar(ctx context.Context, userId int, file mu
 		return nil, err
 	}
 
+	//open file
+	bufferFile, err := file.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer bufferFile.Close()
+
 	//upload file
-	imagePath := fmt.Sprint(us.config.FirebaseConf().BucketPath(), "/users/", userId, "/avatar/", userId, "-avatar.", strings.Split(fileHeader.Filename, ".")[1])
-	token, err := us.firebase.UploadFile(ctx, file, imagePath)
+	imagePath := fmt.Sprint(us.config.FirebaseConf().BucketPath(), "/users/", userId, "/avatar/", userId, "-avatar.", strings.Split(file.Filename, ".")[1])
+	token, err := us.firebase.UploadFile(ctx, bufferFile, imagePath)
 	if err != nil {
 		return nil, err
 	}
