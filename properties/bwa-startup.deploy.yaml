@@ -31,3 +31,4 @@ image:
     - jpeg
     - png
   max-avatar-size-in-mb: 2
+  max-campaign-size-in-mb: 3
