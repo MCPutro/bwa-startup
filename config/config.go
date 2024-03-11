@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -30,37 +31,56 @@ type configImpl struct {
 	Image    Image    `mapstructure:"image"`
 }
 
-func NewConfig() Config {
-	configOnce.Do(func() {
-		log.Println("Loading variables is started")
-		envMode := os.Getenv("ENV_MODE")
-		if envMode == "" {
-			envMode = "develop"
-		}
-		fileConfig := fmt.Sprintf("properties/bwa-startup.%s.yaml", envMode)
+func NewConfig() (Config, error) {
 
-		v := viper.New()
-		// v.SetConfigType("yaml")
-		// v.AddConfigPath(".")
-		v.SetConfigFile(fileConfig)
+	var configPath string
 
-		if err := v.ReadInConfig(); err != nil {
-			panic(fmt.Errorf("failed to read config file: %s", err))
-		}
+	// Set up a CLI flag called "-config" to allow users
+	flag.StringVar(&configPath, "config", "", "path to config file")
 
-		conf = new(configImpl)
-		if err := v.Unmarshal(conf); err != nil {
-			panic(fmt.Errorf("failed to unmarshal config: %s", err))
-		}
+	// Actually parse the flags
+	flag.Parse()
 
-		conf.Image.MapImageType = map[string]bool{}
-		for _, s := range conf.Image.ImageType {
-			conf.Image.MapImageType[s] = true
-		}
-		log.Println("Loading variables is completed")
-	})
+	if err := validateConfigPath(configPath); err != nil {
+		return nil, err
+	} else {
+		configOnce.Do(func() {
+			log.Println("Loading variables is started")
 
-	return conf
+			v := viper.New()
+			// v.SetConfigType("yaml")
+			// v.AddConfigPath(".")
+			v.SetConfigFile(configPath)
+
+			if err := v.ReadInConfig(); err != nil {
+				panic(fmt.Errorf("failed to read config file: %s", err))
+			}
+
+			conf = new(configImpl)
+			if err := v.Unmarshal(conf); err != nil {
+				panic(fmt.Errorf("failed to unmarshal config: %s", err))
+			}
+
+			conf.Image.MapImageType = map[string]bool{}
+			for _, s := range conf.Image.ImageType {
+				conf.Image.MapImageType[s] = true
+			}
+			log.Println("Loading variables is completed")
+		})
+	}
+
+	return conf, nil
+}
+
+func validateConfigPath(path string) error {
+	s, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if s.IsDir() {
+		return fmt.Errorf("'%s' is a directory, not a normal file", path)
+	}
+	return nil
 }
 
 func (c *configImpl) AuthConf() AuthConfig {

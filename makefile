@@ -14,6 +14,7 @@ help:
 	@echo " migration-create name={name}  Create migration"
 	@echo " migration-up                  Up migrations"
 	@echo " migration-down                Down last migration"
+	@echo " go-run                        Run Project"
 
 # Build
 
@@ -33,6 +34,9 @@ migration-up:
 migration-down:
 	@migrate -database $(DB_URL) -path ./migrations down 1
 
+.SILENT: go-run
+go-run:
+	@go run main.go -config=properties/bwa-startup.develop.yaml
 
 .DEFAULT_GOAL := help
 
