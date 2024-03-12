@@ -33,7 +33,7 @@ func (c *campaignImpl) FindByUserId(ctx context.Context, userId int) (entity.Cam
 		return campaigns, nil
 	}
 
-	return nil, newError.ErrNotFound
+	return nil, nil
 }
 
 func (c *campaignImpl) FindById(ctx context.Context, userId, campaignId int) (*entity.Campaign, error) {

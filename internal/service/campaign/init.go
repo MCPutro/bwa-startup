@@ -13,7 +13,13 @@ import (
 	"errors"
 	"fmt"
 	"mime/multipart"
+	"sync"
 	"time"
+)
+
+var (
+	emptyCampaignListOnce sync.Once
+	emptyCampaignList     []*response.Campaign
 )
 
 type campaignServiceImpl struct {
@@ -25,17 +31,17 @@ type campaignServiceImpl struct {
 }
 
 func (s *campaignServiceImpl) GetCampaignByUserId(ctx context.Context, userId int) ([]*response.Campaign, error) {
-	//check user id
-	_, err := s.user.FindById(ctx, userId)
-	if err == nil {
-		return nil, errors.New("user id not found")
-	}
 
 	campaignByUserId, err := s.campaign.FindByUserId(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
-	return campaignByUserId.ToCampaignRespList(), nil
+
+	if campaignByUserId != nil {
+		return campaignByUserId.ToCampaignRespList(), nil
+	} else {
+		return emptyCampaignList, nil
+	}
 }
 
 func (s *campaignServiceImpl) GetCampaignDetailById(ctx context.Context, userId, campaignId int) (*response.CampaignDetail, error) {
@@ -130,6 +136,10 @@ func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignI
 }
 
 func NewService(cfg config.Config, repo campaign.Repository, user user.Repository, firebase firebase.Repository) Service {
+	emptyCampaignListOnce.Do(func() {
+		emptyCampaignList = make([]*response.Campaign, 0)
+	})
+
 	return &campaignServiceImpl{
 		campaign:     repo,
 		user:         user,

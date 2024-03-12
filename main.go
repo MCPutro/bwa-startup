@@ -24,7 +24,6 @@ func main() {
 		return
 	}
 
-	log.Println("Failed load config. error message :", err.Error())
 	server := app.NewServer()
 
 	repo := repository.NewRepoManagerImpl(cfg, db)
