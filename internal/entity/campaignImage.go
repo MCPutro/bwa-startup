@@ -5,7 +5,8 @@ import "time"
 type CampaignImage struct {
 	ID         int
 	CampaignID int
-	Filename   string
+	Image      string
+	Token      string
 	IsPrimary  bool
 	CreatedAt  time.Time
 	UpdatedAt  time.Time

@@ -6,6 +6,7 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -26,4 +27,8 @@ func GetUserId(value any) int {
 		return -1
 	}
 	return userId
+}
+
+func GetUrlImage(bucket, image, token string) string {
+	return fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", bucket, url.PathEscape(image), token)
 }

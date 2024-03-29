@@ -1,9 +1,8 @@
 package entity
 
 import (
+	"bwa-startup/internal/common"
 	"bwa-startup/internal/handler/response"
-	"fmt"
-	"net/url"
 	"time"
 )
 
@@ -34,7 +33,7 @@ func (u *User) ToUserResponse(bucket string, token string) *response.User {
 func (u *User) GetUrlAvatar(bucket string) string {
 	var urlAvatar string
 	if u.Image != "" && u.ImageToken != "" {
-		urlAvatar = fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", bucket, url.PathEscape(u.Image), u.ImageToken)
+		urlAvatar = common.GetUrlImage(bucket, u.Image, u.ImageToken)
 	}
 	return urlAvatar
 }

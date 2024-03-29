@@ -6,9 +6,10 @@ import (
 	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
 	"bwa-startup/internal/service/campaign"
-	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"strconv"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type handlerImpl struct {
@@ -53,7 +54,7 @@ func (h *handlerImpl) GetCampaign(c *fiber.Ctx) error {
 }
 
 func (h *handlerImpl) GetCampaignById(c *fiber.Ctx) error {
-	userId := common.GetUserId(c.Get("userID"))
+	userId := common.GetUserId(c.Locals("userID"))
 	if userId == -1 {
 		return c.Status(http.StatusBadRequest).JSON(response.New{
 			Success: false, Code: http.StatusBadRequest, Message: "Invalid Request",
@@ -81,7 +82,7 @@ func (h *handlerImpl) GetCampaignById(c *fiber.Ctx) error {
 }
 
 func (h *handlerImpl) CreateCampaign(c *fiber.Ctx) error {
-	userId := common.GetUserId(c.Get("userID"))
+	userId := common.GetUserId(c.Locals("userID"))
 	if userId == -1 {
 		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request"})
 
@@ -114,7 +115,7 @@ func (h *handlerImpl) CreateCampaign(c *fiber.Ctx) error {
 }
 
 func (h *handlerImpl) UpdateCampaign(c *fiber.Ctx) error {
-	userId := common.GetUserId(c.Get("userID"))
+	userId := common.GetUserId(c.Locals("userID"))
 	if userId == -1 {
 		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request"})
 	}
@@ -154,7 +155,7 @@ func (h *handlerImpl) UpdateCampaign(c *fiber.Ctx) error {
 }
 
 func (h *handlerImpl) UploadImage(c *fiber.Ctx) error {
-	userId := common.GetUserId(c.Get("userID"))
+	userId := common.GetUserId(c.Locals("userID"))
 	if userId == -1 {
 		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "invalid data"})
 	}

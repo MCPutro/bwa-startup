@@ -4,14 +4,15 @@ import (
 	"bwa-startup/config"
 	"context"
 	"encoding/base64"
-	cloudFirebase "firebase.google.com/go/v4"
-	firebaseStorage "firebase.google.com/go/v4/storage"
 	"fmt"
-	"github.com/google/uuid"
-	"google.golang.org/api/option"
 	"io"
 	"log"
 	"mime/multipart"
+
+	cloudFirebase "firebase.google.com/go/v4"
+	firebaseStorage "firebase.google.com/go/v4/storage"
+	"github.com/google/uuid"
+	"google.golang.org/api/option"
 )
 
 type firebaseRepositoryImpl struct {
@@ -94,6 +95,16 @@ func (fs *firebaseRepositoryImpl) UploadFile(ctx context.Context, file multipart
 
 func resizeImage() {
 	//image.Rect()
+}
+
+// BucketName implements Repository.
+func (fs *firebaseRepositoryImpl) BucketName() string {
+	return fs.cfg.BucketName()
+}
+
+// BucketPath implements Repository.
+func (fs *firebaseRepositoryImpl) BucketPath() string {
+	return fs.cfg.BucketPath()
 }
 
 func NewRepository(cfg config.Config) Repository {

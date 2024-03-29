@@ -23,11 +23,10 @@ var (
 )
 
 type campaignServiceImpl struct {
-	campaign     campaign.Repository
-	user         user.Repository
-	firebase     firebase.Repository
-	config       config.Config
-	firebaseConf config.FirebaseConfig
+	campaign campaign.Repository
+	user     user.Repository
+	firebase firebase.Repository
+	config   config.Config
 }
 
 func (s *campaignServiceImpl) GetCampaignByUserId(ctx context.Context, userId int) ([]*response.Campaign, error) {
@@ -38,7 +37,7 @@ func (s *campaignServiceImpl) GetCampaignByUserId(ctx context.Context, userId in
 	}
 
 	if campaignByUserId != nil {
-		return campaignByUserId.ToCampaignRespList(), nil
+		return campaignByUserId.ToCampaignRespList(s.firebase.BucketName()), nil
 	} else {
 		return emptyCampaignList, nil
 	}
@@ -54,7 +53,7 @@ func (s *campaignServiceImpl) GetCampaignDetailById(ctx context.Context, userId,
 		return nil, err
 	}
 
-	return campaignById.ToCampaignDetailResp(s.firebaseConf.BucketName()), nil
+	return campaignById.ToCampaignDetailResp(s.firebase.BucketName()), nil
 }
 
 func (s *campaignServiceImpl) CreateCampaign(ctx context.Context, campaign *request.Campaign) (*response.CampaignDetail, error) {
@@ -71,7 +70,7 @@ func (s *campaignServiceImpl) CreateCampaign(ctx context.Context, campaign *requ
 
 	save.User = *existingUser
 
-	return save.ToCampaignDetailResp(s.firebaseConf.BucketName()), nil
+	return save.ToCampaignDetailResp(s.firebase.BucketName()), nil
 }
 
 func (s *campaignServiceImpl) UpdateCampaign(ctx context.Context, campaignId int, newCampaign *request.Campaign) (*response.CampaignDetail, error) {
@@ -93,7 +92,7 @@ func (s *campaignServiceImpl) UpdateCampaign(ctx context.Context, campaignId int
 		return nil, err
 	}
 
-	return updatedCampaign.ToCampaignDetailResp(s.firebaseConf.BucketName()), nil
+	return updatedCampaign.ToCampaignDetailResp(s.firebase.BucketName()), nil
 }
 
 func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignId int, file *multipart.FileHeader, isPrimary bool) error {
@@ -115,7 +114,7 @@ func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignI
 	}
 	defer bufferFile.Close()
 
-	imagePath := fmt.Sprint(s.firebaseConf.BucketPath(), "/campaigns/", campaignId, "/", file.Filename)
+	imagePath := fmt.Sprint(s.firebase.BucketPath(), "/campaigns/", campaignId, "/", file.Filename)
 	tokenFile, err := s.firebase.UploadFile(ctx, bufferFile, imagePath)
 	if err != nil {
 		return err
@@ -124,7 +123,8 @@ func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignI
 	//update database
 	campaignImage := entity.CampaignImage{
 		CampaignID: campaignId,
-		Filename:   imagePath + "?alt=media&token=" + tokenFile,
+		Image:      imagePath, // + "?alt=media&token=" + tokenFile,
+		Token:      tokenFile,
 		IsPrimary:  isPrimary,
 	}
 	err = s.campaign.CreateImage(ctx, &campaignImage)
@@ -141,10 +141,10 @@ func NewService(cfg config.Config, repo campaign.Repository, user user.Repositor
 	})
 
 	return &campaignServiceImpl{
-		campaign:     repo,
-		user:         user,
-		firebase:     firebase,
-		config:       cfg,
-		firebaseConf: cfg.FirebaseConf(),
+		campaign: repo,
+		user:     user,
+		firebase: firebase,
+		config:   cfg,
+		// firebaseConf: cfg.FirebaseConf(),
 	}
 }
