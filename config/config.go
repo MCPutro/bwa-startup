@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -73,6 +74,9 @@ func NewConfig() (Config, error) {
 }
 
 func validateConfigPath(path string) error {
+	if path == "" {
+		return errors.New("config file was not found")
+	}
 	s, err := os.Stat(path)
 	if err != nil {
 		return err
