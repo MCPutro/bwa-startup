@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.transactions(
     CONSTRAINT transactions_pk PRIMARY KEY (id),
     CONSTRAINT transactions_campaigns_id_fk FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id),
     CONSTRAINT transactions_users_id_fk FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 
 create index transactions_campaign_id_idx
     on transactions (campaign_id);
