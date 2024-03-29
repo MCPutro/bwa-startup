@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewPostgre(cfg *config.Database) (*gorm.DB, error) {
+func NewPostgres(cfg *config.Database) (*gorm.DB, error) {
 	var db *gorm.DB
 	var err error
 	var i = 0

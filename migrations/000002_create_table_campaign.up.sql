@@ -12,5 +12,6 @@ CREATE TABLE IF NOT EXISTS public.campaigns
     slug             varchar NULL,
     created_at       timestamp NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at       timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT campaign_pk PRIMARY KEY (id)
+    CONSTRAINT campaign_pk PRIMARY KEY (id),
+    CONSTRAINT campaigns_users_id_fk FOREIGN KEY (user_id) REFERENCES public.users(id)
 );

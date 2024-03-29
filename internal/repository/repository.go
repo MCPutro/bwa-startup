@@ -5,6 +5,7 @@ import (
 	"bwa-startup/internal/repository/auth"
 	"bwa-startup/internal/repository/campaign"
 	"bwa-startup/internal/repository/firebase"
+	"bwa-startup/internal/repository/transaction"
 	"bwa-startup/internal/repository/user"
 	"sync"
 
@@ -23,6 +24,9 @@ var (
 
 	campaignRepository     campaign.Repository
 	campaignRepositoryOnce sync.Once
+
+	transactionRepository     transaction.Repository
+	transactionRepositoryOnce sync.Once
 )
 
 type Repository interface {
@@ -30,6 +34,7 @@ type Repository interface {
 	FirebaseRepository() firebase.Repository
 	AuthRepository() auth.Repository
 	CampaignRepository() campaign.Repository
+	TransactionRepository() transaction.Repository
 }
 
 type repoManagerImpl struct {
@@ -37,7 +42,6 @@ type repoManagerImpl struct {
 	cfg config.Config
 }
 
-// UserRepository implements Repository.
 func (r *repoManagerImpl) UserRepository() user.Repository {
 	userRepositoryOnce.Do(func() {
 		userRepository = user.NewRepository(r.db)
@@ -52,7 +56,6 @@ func (r *repoManagerImpl) FirebaseRepository() firebase.Repository {
 	return firebaseRepository
 }
 
-// AuthRepository implements Repository.
 func (r *repoManagerImpl) AuthRepository() auth.Repository {
 	authRepositoryOnce.Do(func() {
 		authRepository = auth.NewAuth(r.cfg.AuthConf())
@@ -60,12 +63,18 @@ func (r *repoManagerImpl) AuthRepository() auth.Repository {
 	return authRepository
 }
 
-// CampaignRepository implements Repository.
 func (r *repoManagerImpl) CampaignRepository() campaign.Repository {
 	campaignRepositoryOnce.Do(func() {
 		campaignRepository = campaign.NewRepository(r.db)
 	})
 	return campaignRepository
+}
+
+func (r *repoManagerImpl) TransactionRepository() transaction.Repository {
+	transactionRepositoryOnce.Do(func() {
+		transactionRepository = transaction.NewRepository(r.db)
+	})
+	return transactionRepository
 }
 
 func NewRepoManagerImpl(cfg config.Config, db *gorm.DB) Repository {

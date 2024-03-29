@@ -17,7 +17,7 @@ func main() {
 		return
 	}
 
-	db, err := database.NewPostgre(cfg.DatabaseConf())
+	db, err := database.NewPostgres(cfg.DatabaseConf())
 
 	if err != nil {
 		log.Println("Failed create database connection. Error message :", err)
