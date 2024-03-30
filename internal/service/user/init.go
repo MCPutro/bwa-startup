@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"mime/multipart"
-	"strings"
+	"path/filepath"
 )
 
 type userServiceImpl struct {
@@ -59,7 +59,8 @@ func (us *userServiceImpl) Register(ctx context.Context, newUser *request.Regist
 		return nil, err
 	}
 
-	return u.ToUserResponse(us.config.FirebaseConf().BucketName(), token), nil
+	return u.ToUserResponse( //us.config.FirebaseConf().BucketName(),
+		token), nil
 }
 
 func (us *userServiceImpl) Login(ctx context.Context, newUser *request.UserLogin) (*response.User, error) {
@@ -80,7 +81,7 @@ func (us *userServiceImpl) Login(ctx context.Context, newUser *request.UserLogin
 		return nil, err
 	}
 
-	return existingUser.ToUserResponse(us.config.FirebaseConf().BucketName(), token), nil
+	return existingUser.ToUserResponse(token), nil
 }
 
 func (us *userServiceImpl) IsEmailAvailable(ctx context.Context, email string) (bool, error) {
@@ -120,21 +121,20 @@ func (us *userServiceImpl) UploadAvatar(ctx context.Context, userId int, file *m
 	defer bufferFile.Close()
 
 	//upload file
-	imagePath := fmt.Sprint(us.config.FirebaseConf().BucketPath(), "/users/", userId, "/avatar/", userId, "-avatar.", strings.Split(file.Filename, ".")[1])
+	imagePath := fmt.Sprint(us.firebase.BucketPath(), "/users/", userId, "/avatar/", userId, "-avatar", filepath.Ext(file.Filename))
 	token, err := us.firebase.UploadFile(ctx, bufferFile, imagePath)
 	if err != nil {
 		return nil, err
 	}
 
 	//update user
-	existingUser.Image = imagePath
-	existingUser.ImageToken = token
+	existingUser.Image = common.GetUrlImage(us.firebase.BucketName(), imagePath, token) //imagePath
 	updatedUser, err := us.user.Update(ctx, existingUser)
 	if err != nil {
 		return nil, err
 	}
 
-	return updatedUser.ToUserResponse(us.config.FirebaseConf().BucketName(), ""), nil
+	return updatedUser.ToUserResponse(""), nil
 }
 
 func NewService(conf config.Config, user user.Repository, auth auth.Repository, firebase firebase.Repository) Service {

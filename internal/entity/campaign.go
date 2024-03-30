@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"bwa-startup/internal/common"
 	"bwa-startup/internal/handler/response"
 	"strings"
 	"time"
@@ -28,13 +27,13 @@ func (c *Campaign) TableName() string {
 	return "campaigns"
 }
 
-func (c *Campaign) ToCampaignDetailResp(bucket string) *response.CampaignDetail {
+func (c *Campaign) ToCampaignDetailResp() *response.CampaignDetail {
 	imagePrimary := ""
 	var listImage []string
 	for i := 0; i < len(c.CampaignImages); i++ {
-		listImage = append(listImage, common.GetUrlImage(bucket, c.CampaignImages[i].Image, c.CampaignImages[i].Token))
+		listImage = append(listImage, c.CampaignImages[i].Image) //common.GetUrlImage(bucket, c.CampaignImages[i].Image, c.CampaignImages[i].Token))
 		if c.CampaignImages[i].IsPrimary && imagePrimary == "" {
-			imagePrimary = common.GetUrlImage(bucket, c.CampaignImages[i].Image, c.CampaignImages[i].Token)
+			imagePrimary = c.CampaignImages[i].Image //common.GetUrlImage(bucket, c.CampaignImages[i].Image, c.CampaignImages[i].Token)
 			//break
 			//continue
 		}
@@ -45,7 +44,7 @@ func (c *Campaign) ToCampaignDetailResp(bucket string) *response.CampaignDetail 
 	if c.User != (User{}) {
 		userId = c.User.ID
 		username = c.User.Name
-		avatar = c.User.GetUrlAvatar(bucket)
+		avatar = c.User.Image
 	}
 
 	return &response.CampaignDetail{
@@ -64,11 +63,11 @@ func (c *Campaign) ToCampaignDetailResp(bucket string) *response.CampaignDetail 
 	}
 }
 
-func (c *Campaign) ToRespCampaign(bucket string) *response.Campaign {
+func (c *Campaign) ToRespCampaign() *response.Campaign {
 	imageUrl := ""
 	for i := 0; i < len(c.CampaignImages); i++ {
 		if c.CampaignImages[i].IsPrimary {
-			imageUrl = common.GetUrlImage(bucket, c.CampaignImages[i].Image, c.CampaignImages[i].Token)
+			imageUrl = c.CampaignImages[i].Image //common.GetUrlImage(bucket, c.CampaignImages[i].Image, c.CampaignImages[i].Token)
 			break
 		}
 	}
@@ -85,10 +84,10 @@ func (c *Campaign) ToRespCampaign(bucket string) *response.Campaign {
 
 type CampaignList []*Campaign
 
-func (c *CampaignList) ToCampaignRespList(bucket string) []*response.Campaign {
+func (c *CampaignList) ToCampaignRespList() []*response.Campaign {
 	var temp []*response.Campaign
 	for _, campaign := range *c {
-		temp = append(temp, campaign.ToRespCampaign(bucket))
+		temp = append(temp, campaign.ToRespCampaign())
 	}
 	return temp
 }

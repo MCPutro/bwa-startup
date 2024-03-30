@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"bwa-startup/internal/common"
 	"bwa-startup/internal/handler/response"
 	"time"
 )
@@ -13,29 +12,20 @@ type User struct {
 	Email      string    `gorm:"column:email"`
 	Password   string    `gorm:"column:password"`
 	Image      string    `gorm:"column:image"`
-	ImageToken string    `gorm:"column:image_token"`
 	Role       string    `gorm:"column:role"`
 	CreatedAt  time.Time `gorm:"column:created_at;autoCreateTime;<-:create"`
 	UpdatedAt  time.Time `gorm:"column:updated_at;autoCreateTime;autoUpdateTime"`
 }
 
-func (u *User) ToUserResponse(bucket string, token string) *response.User {
+func (u *User) ToUserResponse(token string) *response.User {
 	return &response.User{
 		ID:         u.ID,
 		Name:       u.Name,
 		Occupation: u.Occupation,
-		Avatar:     u.GetUrlAvatar(bucket),
+		Avatar:     u.Image, //u.GetUrlAvatar(bucket),
 		Email:      u.Email,
 		Token:      token,
 	}
-}
-
-func (u *User) GetUrlAvatar(bucket string) string {
-	var urlAvatar string
-	if u.Image != "" && u.ImageToken != "" {
-		urlAvatar = common.GetUrlImage(bucket, u.Image, u.ImageToken)
-	}
-	return urlAvatar
 }
 
 func (u *User) TableName() string {

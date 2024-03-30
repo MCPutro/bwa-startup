@@ -5,7 +5,6 @@ CREATE TABLE  IF NOT EXISTS public.users (
       email varchar NOT NULL,
       "password" varchar NULL,
       image varchar NULL,
-      image_token varchar NULL,
       "role" varchar NULL,
       created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at timestamp NULL DEFAULT CURRENT_TIMESTAMP ,

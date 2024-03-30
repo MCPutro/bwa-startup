@@ -37,7 +37,7 @@ func (s *campaignServiceImpl) GetCampaignByUserId(ctx context.Context, userId in
 	}
 
 	if campaignByUserId != nil {
-		return campaignByUserId.ToCampaignRespList(s.firebase.BucketName()), nil
+		return campaignByUserId.ToCampaignRespList(), nil
 	} else {
 		return emptyCampaignList, nil
 	}
@@ -53,7 +53,7 @@ func (s *campaignServiceImpl) GetCampaignDetailById(ctx context.Context, userId,
 		return nil, err
 	}
 
-	return campaignById.ToCampaignDetailResp(s.firebase.BucketName()), nil
+	return campaignById.ToCampaignDetailResp(), nil
 }
 
 func (s *campaignServiceImpl) CreateCampaign(ctx context.Context, campaign *request.Campaign) (*response.CampaignDetail, error) {
@@ -70,7 +70,7 @@ func (s *campaignServiceImpl) CreateCampaign(ctx context.Context, campaign *requ
 
 	save.User = *existingUser
 
-	return save.ToCampaignDetailResp(s.firebase.BucketName()), nil
+	return save.ToCampaignDetailResp(), nil
 }
 
 func (s *campaignServiceImpl) UpdateCampaign(ctx context.Context, campaignId int, newCampaign *request.Campaign) (*response.CampaignDetail, error) {
@@ -92,7 +92,7 @@ func (s *campaignServiceImpl) UpdateCampaign(ctx context.Context, campaignId int
 		return nil, err
 	}
 
-	return updatedCampaign.ToCampaignDetailResp(s.firebase.BucketName()), nil
+	return updatedCampaign.ToCampaignDetailResp(), nil
 }
 
 func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignId int, file *multipart.FileHeader, isPrimary bool) error {
@@ -115,7 +115,7 @@ func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignI
 	defer bufferFile.Close()
 
 	imagePath := fmt.Sprint(s.firebase.BucketPath(), "/campaigns/", campaignId, "/", file.Filename)
-	tokenFile, err := s.firebase.UploadFile(ctx, bufferFile, imagePath)
+	imageToken, err := s.firebase.UploadFile(ctx, bufferFile, imagePath)
 	if err != nil {
 		return err
 	}
@@ -123,8 +123,7 @@ func (s *campaignServiceImpl) UploadImage(ctx context.Context, userId, campaignI
 	//update database
 	campaignImage := entity.CampaignImage{
 		CampaignID: campaignId,
-		Image:      imagePath, // + "?alt=media&token=" + tokenFile,
-		Token:      tokenFile,
+		Image:      common.GetUrlImage(s.firebase.BucketName(), imagePath, imageToken),
 		IsPrimary:  isPrimary,
 	}
 	err = s.campaign.CreateImage(ctx, &campaignImage)
