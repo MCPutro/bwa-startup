@@ -21,7 +21,7 @@ func RegisterRoute(r *app.Server, service service.Service, repo repository.Repos
 
 	api := r.Group("/api/v1")
 
-	userHandler := user.NewHandler(service.UserService(), config.ImageConf())
+	userHandler := user.NewHandler(service.UserService(), config.ImageConf(), service.TransactionService())
 
 	authMiddleware := middleware.New(repo.AuthRepository())
 
