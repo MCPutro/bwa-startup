@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bwa-startup/internal/handler/http/user"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -18,4 +19,5 @@ func UserRoutePrivate(group fiber.Router, handler user.Handler, middleware fiber
 	route := group.Group("/user")
 
 	route.Post("/uploadAvatar", middleware, handler.UploadAvatar)
+	route.Get("/transactions", middleware, handler.FindTrx)
 }

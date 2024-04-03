@@ -11,4 +11,5 @@ type Handler interface {
 	CreateCampaign(c *fiber.Ctx) error
 	UpdateCampaign(c *fiber.Ctx) error
 	UploadImage(c *fiber.Ctx) error
+	FindTrx(c *fiber.Ctx) error
 }

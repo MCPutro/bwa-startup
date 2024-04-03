@@ -2,6 +2,7 @@ package routes
 
 import (
 	"bwa-startup/internal/handler/http/campaign"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -15,4 +16,5 @@ func CampaignRoute(group fiber.Router, handler campaign.Handler, middleware fibe
 	route.Post("/", handler.CreateCampaign)
 	route.Put("/:campaignId", handler.UpdateCampaign)
 	route.Post("/:campaignId/image", handler.UploadImage)
+	route.Get("/:campaignId/transactions", handler.FindTrx)
 }

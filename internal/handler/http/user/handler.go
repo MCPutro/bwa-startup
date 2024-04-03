@@ -9,4 +9,5 @@ type Handler interface {
 	Login(c *fiber.Ctx) error
 	CheckEmailAvailable(c *fiber.Ctx) error
 	UploadAvatar(c *fiber.Ctx) error
+	FindTrx(c *fiber.Ctx) error
 }

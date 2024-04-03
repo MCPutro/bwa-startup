@@ -8,8 +8,9 @@ import (
 	"bwa-startup/internal/middleware"
 	"bwa-startup/internal/repository"
 	"bwa-startup/internal/service"
-	"github.com/gofiber/fiber/v2"
 	"net/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func RegisterRoute(r *app.Server, service service.Service, repo repository.Repository, config config.Config) {
@@ -29,6 +30,6 @@ func RegisterRoute(r *app.Server, service service.Service, repo repository.Repos
 	//with middleware
 	UserRoutePrivate(api, userHandler, authMiddleware)
 
-	campaignHandler := campaign.NewHandler(service.CampaignService())
+	campaignHandler := campaign.NewHandler(service.CampaignService(), service.TransactionService())
 	CampaignRoute(api, campaignHandler, authMiddleware)
 }

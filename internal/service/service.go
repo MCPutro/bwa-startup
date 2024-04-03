@@ -4,6 +4,7 @@ import (
 	"bwa-startup/config"
 	"bwa-startup/internal/repository"
 	"bwa-startup/internal/service/campaign"
+	"bwa-startup/internal/service/transaction"
 	"bwa-startup/internal/service/user"
 
 	"sync"
@@ -15,12 +16,17 @@ var (
 
 	campaignService     campaign.Service
 	campaignServiceOnce sync.Once
+
+	transactionService     transaction.Service
+	transactionServiceOnce sync.Once
 )
 
 type Service interface {
 	UserService() user.Service
 
 	CampaignService() campaign.Service
+
+	TransactionService() transaction.Service
 }
 
 type serviceManagerImpl struct {
@@ -28,7 +34,6 @@ type serviceManagerImpl struct {
 	repo repository.Repository
 }
 
-// UserService implements Service.
 func (s *serviceManagerImpl) UserService() user.Service {
 	userServiceOnce.Do(func() {
 		userService = user.NewService(s.conf, s.repo.UserRepository(), s.repo.AuthRepository(), s.repo.FirebaseRepository())
@@ -41,6 +46,13 @@ func (s *serviceManagerImpl) CampaignService() campaign.Service {
 		campaignService = campaign.NewService(s.conf, s.repo.CampaignRepository(), s.repo.UserRepository(), s.repo.FirebaseRepository())
 	})
 	return campaignService
+}
+
+func (s *serviceManagerImpl) TransactionService() transaction.Service {
+	transactionServiceOnce.Do(func() {
+		transactionService = transaction.NewService(s.repo.TransactionRepository())
+	})
+	return transactionService
 }
 
 func NewServiceManagerImpl(config config.Config, repo repository.Repository) Service {

@@ -3,6 +3,7 @@ package transaction
 import (
 	"bwa-startup/internal/entity"
 	"context"
+
 	"gorm.io/gorm"
 )
 
@@ -13,7 +14,7 @@ type transactionImpl struct {
 func (t *transactionImpl) GetByCampaignId(ctx context.Context, campId int) ([]*entity.Transaction, error) {
 	var tmp []*entity.Transaction
 
-	result := t.db.WithContext(ctx).Where("campaign_id = ?", campId).Find(&tmp).Preload("User")
+	result := t.db.WithContext(ctx).Where("campaign_id = ?", campId).Preload("User").Find(&tmp)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -26,7 +27,7 @@ func (t *transactionImpl) GetByCampaignId(ctx context.Context, campId int) ([]*e
 func (t *transactionImpl) GetByUserId(ctx context.Context, userId int) ([]*entity.Transaction, error) {
 	var tmp []*entity.Transaction
 
-	result := t.db.WithContext(ctx).Where("campaign_id = ?", userId).Find(&tmp).Preload("User")
+	result := t.db.WithContext(ctx).Where("campaign_id = ?", userId).Preload("User").Find(&tmp)
 	if result.Error != nil {
 		return nil, result.Error
 	}

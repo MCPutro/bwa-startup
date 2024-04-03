@@ -6,6 +6,7 @@ import (
 	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
 	"bwa-startup/internal/service/campaign"
+	"bwa-startup/internal/service/transaction"
 	"net/http"
 	"strconv"
 
@@ -13,7 +14,8 @@ import (
 )
 
 type handlerImpl struct {
-	service campaign.Service
+	campaign campaign.Service
+	trx      transaction.Service
 }
 
 func (h *handlerImpl) GetAllCampaign(c *fiber.Ctx) error {
@@ -34,7 +36,7 @@ func (h *handlerImpl) GetCampaign(c *fiber.Ctx) error {
 	}
 
 	var resp response.New
-	campaignByUserId, err := h.service.GetCampaignByUserId(c.Context(), userId)
+	campaignByUserId, err := h.campaign.GetCampaignByUserId(c.Context(), userId)
 	if err != nil {
 		resp = response.New{
 			Success: false,
@@ -64,8 +66,11 @@ func (h *handlerImpl) GetCampaignById(c *fiber.Ctx) error {
 
 	campaignIdString := c.Params("campaignId")
 	campaignId, err := strconv.Atoi(campaignIdString)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+	}
 
-	campaignDetail, err := h.service.GetCampaignDetailById(c.Context(), userId, campaignId)
+	campaignDetail, err := h.campaign.GetCampaignDetailById(c.Context(), userId, campaignId)
 
 	var resp response.New
 	if err != nil {
@@ -99,7 +104,7 @@ func (h *handlerImpl) CreateCampaign(c *fiber.Ctx) error {
 	}
 	body.UserId = userId
 
-	createCampaign, err := h.service.CreateCampaign(c.Context(), &body)
+	createCampaign, err := h.campaign.CreateCampaign(c.Context(), &body)
 	var resp response.New
 	if err != nil {
 		resp = response.New{
@@ -138,7 +143,7 @@ func (h *handlerImpl) UpdateCampaign(c *fiber.Ctx) error {
 	}
 	body.UserId = userId
 
-	updateCampaign, err := h.service.UpdateCampaign(c.Context(), campaignId, &body)
+	updateCampaign, err := h.campaign.UpdateCampaign(c.Context(), campaignId, &body)
 	var resp response.New
 	if err != nil {
 		resp = response.New{
@@ -161,6 +166,9 @@ func (h *handlerImpl) UploadImage(c *fiber.Ctx) error {
 	}
 
 	campaignId, err := strconv.Atoi(c.Params("campaignId"))
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+	}
 
 	isPrimary, err := strconv.ParseBool(c.FormValue("is_primary", "true"))
 	if err != nil {
@@ -173,7 +181,7 @@ func (h *handlerImpl) UploadImage(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
 	}
 
-	err = h.service.UploadImage(c.Context(), userId, campaignId, file, isPrimary)
+	err = h.campaign.UploadImage(c.Context(), userId, campaignId, file, isPrimary)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
 
@@ -182,11 +190,33 @@ func (h *handlerImpl) UploadImage(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(response.New{
 		Success: true,
 		Code:    http.StatusOK,
-		Message: strconv.Itoa(userId),
+		Message: "success",
 		Data:    campaignId,
 	})
 }
 
-func NewHandler(service campaign.Service) Handler {
-	return &handlerImpl{service: service}
+func (h *handlerImpl) FindTrx(c *fiber.Ctx) error {
+	campaignId, err := strconv.Atoi(c.Params("campaignId"))
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+	}
+
+	result, err := h.trx.FindByCampaignId(c.Context(), campaignId)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+	}
+
+	return c.Status(http.StatusOK).JSON(response.New{
+		Success: true,
+		Code:    http.StatusOK,
+		Message: "success",
+		Data:    result,
+	})
+}
+
+func NewHandler(campaign campaign.Service, trx transaction.Service) Handler {
+	return &handlerImpl{
+		campaign: campaign,
+		trx:      trx,
+	}
 }

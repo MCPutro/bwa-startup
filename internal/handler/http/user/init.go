@@ -6,14 +6,17 @@ import (
 	newError "bwa-startup/internal/common/errors"
 	"bwa-startup/internal/handler/request"
 	"bwa-startup/internal/handler/response"
+	"bwa-startup/internal/service/transaction"
 	"bwa-startup/internal/service/user"
-	"github.com/gofiber/fiber/v2"
 	"net/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type handlerImpl struct {
-	service user.Service
-	image   config.ImageConf
+	user  user.Service
+	image config.ImageConf
+	trx   transaction.Service
 }
 
 func (h *handlerImpl) Login(c *fiber.Ctx) error {
@@ -28,7 +31,7 @@ func (h *handlerImpl) Login(c *fiber.Ctx) error {
 
 	}
 
-	u, err := h.service.Login(c.Context(), &body)
+	u, err := h.user.Login(c.Context(), &body)
 	if err != nil {
 		return c.Status(newError.StatusCode(err.Error())).JSON(response.New{
 			Success: false,
@@ -58,7 +61,7 @@ func (h *handlerImpl) RegisterUser(c *fiber.Ctx) error {
 
 	}
 
-	u, err := h.service.Register(c.Context(), &body)
+	u, err := h.user.Register(c.Context(), &body)
 	if err != nil {
 		return c.Status(newError.StatusCode(err.Error())).JSON(response.New{
 			Success: false,
@@ -89,7 +92,7 @@ func (h *handlerImpl) CheckEmailAvailable(c *fiber.Ctx) error {
 
 	}
 
-	b, err := h.service.IsEmailAvailable(c.Context(), body.Email)
+	b, err := h.user.IsEmailAvailable(c.Context(), body.Email)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(response.New{
 			Success: false,
@@ -143,7 +146,7 @@ func (h *handlerImpl) UploadAvatar(c *fiber.Ctx) error {
 	}
 
 	//upload file
-	resp, err := h.service.UploadAvatar(c.Context(), userId, file)
+	resp, err := h.user.UploadAvatar(c.Context(), userId, file)
 	if err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(response.New{
 			Success: false,
@@ -160,9 +163,37 @@ func (h *handlerImpl) UploadAvatar(c *fiber.Ctx) error {
 	})
 }
 
-func NewHandler(service user.Service, image config.ImageConf) Handler {
+func (h *handlerImpl) FindTrx(c *fiber.Ctx) error {
+	userId := common.GetUserId(c.Locals("userID"))
+	if userId <= 0 {
+		return c.Status(http.StatusBadRequest).JSON(response.New{
+			Success: false,
+			Code:    http.StatusBadRequest,
+			Message: "invalid user id",
+		})
+	}
+
+	//get trx list
+	trx, err := h.trx.FindByUserId(c.Context(), userId)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(response.New{
+			Success: false,
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusCreated).JSON(response.New{
+		Success: true,
+		Code:    http.StatusOK,
+		Data:    trx,
+	})
+}
+
+func NewHandler(service user.Service, image config.ImageConf, trx transaction.Service) Handler {
 	return &handlerImpl{
-		service: service,
-		image:   image,
+		user:  service,
+		image: image,
+		trx:   trx,
 	}
 }
