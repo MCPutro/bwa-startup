@@ -11,10 +11,10 @@ type transactionImpl struct {
 	db *gorm.DB
 }
 
-func (t *transactionImpl) GetByCampaignId(ctx context.Context, campId int) ([]*entity.Transaction, error) {
+func (t *transactionImpl) GetByCampaignId(ctx context.Context, campId int) (entity.TransactionList, error) {
 	var tmp []*entity.Transaction
 
-	result := t.db.WithContext(ctx).Where("campaign_id = ?", campId).Preload("User").Find(&tmp)
+	result := t.db.WithContext(ctx).Where("campaign_id = ?", campId).Preload("User").Order("created_at desc").Find(&tmp)
 	if result.Error != nil {
 		return nil, result.Error
 	}

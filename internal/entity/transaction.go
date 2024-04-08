@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"bwa-startup/internal/constants"
+	"bwa-startup/internal/handler/response"
 	"time"
 )
 
@@ -18,4 +20,19 @@ type Transaction struct {
 
 func (t *Transaction) TableName() string {
 	return "transactions"
+}
+
+type TransactionList []*Transaction
+
+func (tl *TransactionList) ToCampaignTrxList() []*response.CampaignTrx {
+	var resp []*response.CampaignTrx
+	for _, v := range *tl {
+		resp = append(resp, &response.CampaignTrx{
+			Id:        v.ID,
+			Name:      v.User.Name,
+			Amount:    v.Amount,
+			CreatedAt: v.CreatedAt.Format(constants.DatetimeFormat),
+		})
+	}
+	return resp
 }

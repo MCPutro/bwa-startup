@@ -167,23 +167,23 @@ func (h *handlerImpl) UploadImage(c *fiber.Ctx) error {
 
 	campaignId, err := strconv.Atoi(c.Params("campaignId"))
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err.Error()})
 	}
 
 	isPrimary, err := strconv.ParseBool(c.FormValue("is_primary", "true"))
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err.Error()})
 
 	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err.Error()})
 	}
 
 	err = h.campaign.UploadImage(c.Context(), userId, campaignId, file, isPrimary)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err.Error()})
 
 	}
 
@@ -196,14 +196,19 @@ func (h *handlerImpl) UploadImage(c *fiber.Ctx) error {
 }
 
 func (h *handlerImpl) FindTrx(c *fiber.Ctx) error {
-	campaignId, err := strconv.Atoi(c.Params("campaignId"))
-	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+	userId := common.GetUserId(c.Locals("userID"))
+	if userId == -1 {
+		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "invalid data"})
 	}
 
-	result, err := h.trx.FindByCampaignId(c.Context(), campaignId)
+	campaignId, err := strconv.Atoi(c.Params("campaignId"))
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err})
+		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: "Invalid Request", ErrorDetail: err.Error()})
+	}
+
+	result, err := h.trx.FindByCampaignId(c.Context(), userId, campaignId)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(response.New{Success: false, Code: http.StatusBadRequest, Message: err.Error()})
 	}
 
 	return c.Status(http.StatusOK).JSON(response.New{

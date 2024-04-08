@@ -50,7 +50,7 @@ func (s *serviceManagerImpl) CampaignService() campaign.Service {
 
 func (s *serviceManagerImpl) TransactionService() transaction.Service {
 	transactionServiceOnce.Do(func() {
-		transactionService = transaction.NewService(s.repo.TransactionRepository())
+		transactionService = transaction.NewService(s.repo.TransactionRepository(), s.repo.CampaignRepository())
 	})
 	return transactionService
 }

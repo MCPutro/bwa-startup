@@ -6,6 +6,6 @@ import (
 )
 
 type Repository interface {
-	GetByCampaignId(ctx context.Context, campId int) ([]*entity.Transaction, error)
+	GetByCampaignId(ctx context.Context, campId int) (entity.TransactionList, error)
 	GetByUserId(ctx context.Context, userId int) ([]*entity.Transaction, error)
 }
