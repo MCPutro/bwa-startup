@@ -9,6 +9,7 @@ import (
 type Transaction struct {
 	ID         int `gorm:"primarykey"`
 	CampaignId int
+	Campaign   Campaign
 	UserId     int
 	User       User
 	Amount     int
@@ -32,6 +33,20 @@ func (tl *TransactionList) ToCampaignTrxList() []*response.CampaignTrx {
 			Name:      v.User.Name,
 			Amount:    v.Amount,
 			CreatedAt: v.CreatedAt.Format(constants.DatetimeFormat),
+		})
+	}
+	return resp
+}
+
+func (tl *TransactionList) ToUserTrxList() []*response.UserTrx {
+	var resp []*response.UserTrx
+	for _, v := range *tl {
+		resp = append(resp, &response.UserTrx{
+			Id:           v.ID,
+			CampaignName: v.Campaign.Name,
+			Amount:       v.Amount,
+			Status:       v.Status,
+			CreatedAt:    v.CreatedAt.Format(constants.DatetimeFormat),
 		})
 	}
 	return resp

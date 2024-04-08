@@ -1,7 +1,6 @@
 package transaction
 
 import (
-	"bwa-startup/internal/entity"
 	"bwa-startup/internal/handler/response"
 	"bwa-startup/internal/repository/campaign"
 	"bwa-startup/internal/repository/transaction"
@@ -29,13 +28,13 @@ func (t *transactionServiceImpl) FindByCampaignId(ctx context.Context, userId in
 	return trxList.ToCampaignTrxList(), nil
 }
 
-func (t *transactionServiceImpl) FindByUserId(ctx context.Context, userId int) ([]*entity.Transaction, error) {
+func (t *transactionServiceImpl) FindByUserId(ctx context.Context, userId int) ([]*response.UserTrx, error) {
 	trxList, err := t.transaction.GetByUserId(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
 
-	return trxList, nil
+	return trxList.ToUserTrxList(), nil
 }
 
 func NewService(trx transaction.Repository, campaign campaign.Repository) Service {
