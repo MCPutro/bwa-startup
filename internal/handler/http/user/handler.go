@@ -10,4 +10,5 @@ type Handler interface {
 	CheckEmailAvailable(c *fiber.Ctx) error
 	UploadAvatar(c *fiber.Ctx) error
 	FindTrx(c *fiber.Ctx) error
+	CreateTrx(c *fiber.Ctx) error
 }

@@ -37,6 +37,16 @@ func (t *transactionImpl) GetByUserId(ctx context.Context, userId int) (entity.T
 	return nil, nil
 }
 
+func (t *transactionImpl) Create(ctx context.Context, transaction *entity.Transaction) (*entity.Transaction, error) {
+	err := t.db.WithContext(ctx).Create(&transaction).Preload("Campaign").Find(&transaction).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return transaction, nil
+}
+
 func NewRepository(db *gorm.DB) Repository {
 	return &transactionImpl{db: db}
 }

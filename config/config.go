@@ -22,6 +22,7 @@ type Config interface {
 	DatabaseConf() *Database
 	ServerConf() *Server
 	ImageConf() ImageConf
+	MidtransConf() MidtransConf
 }
 
 type configImpl struct {
@@ -30,6 +31,7 @@ type configImpl struct {
 	Firebase Firebase `mapstructure:"firebase"`
 	Jwt      JWT      `mapstructure:"jwt"`
 	Image    Image    `mapstructure:"image"`
+	Midtrans Midtrans `mapstructure:"midtrans"`
 }
 
 func NewConfig() (Config, error) {
@@ -105,4 +107,8 @@ func (c *configImpl) ServerConf() *Server {
 
 func (c *configImpl) ImageConf() ImageConf {
 	return &c.Image
+}
+
+func (c *configImpl) MidtransConf() MidtransConf {
+	return &c.Midtrans
 }

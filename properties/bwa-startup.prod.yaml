@@ -1,5 +1,6 @@
 server:
   port: 9999
+  env: prod
 
 database:
   hostname: localhost 
@@ -32,3 +33,7 @@ image:
     - png
   max-avatar-size-in-mb: 2
   max-campaign-size-in-mb: 3
+
+midtrans:
+  client-key: 12345678abcdefgh
+  server-key:	12345678abcdefgh

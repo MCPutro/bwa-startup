@@ -13,8 +13,8 @@ type repositoryImpl struct {
 	db *gorm.DB
 }
 
-func (ur *repositoryImpl) Save(ctx context.Context, user *entity.User) (*entity.User, error) {
-	err := ur.db.WithContext(ctx).Create(user).Error
+func (ur *repositoryImpl) Create(ctx context.Context, user *entity.User) (*entity.User, error) {
+	err := ur.db.WithContext(ctx).Create(&user).Error
 	if err != nil {
 		return nil, err
 	}

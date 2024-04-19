@@ -20,4 +20,5 @@ func UserRoutePrivate(group fiber.Router, handler user.Handler, middleware fiber
 
 	route.Post("/uploadAvatar", middleware, handler.UploadAvatar)
 	route.Get("/transactions", middleware, handler.FindTrx)
+	route.Post("/transactions", middleware, handler.CreateTrx)
 }

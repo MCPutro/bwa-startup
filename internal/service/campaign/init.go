@@ -29,7 +29,7 @@ type campaignServiceImpl struct {
 	config   config.Config
 }
 
-func (s *campaignServiceImpl) GetCampaignByUserId(ctx context.Context, userId int) ([]*response.Campaign, error) {
+func (s *campaignServiceImpl) GetByUserId(ctx context.Context, userId int) ([]*response.Campaign, error) {
 
 	campaignByUserId, err := s.campaign.FindByUserId(ctx, userId)
 	if err != nil {
@@ -43,7 +43,7 @@ func (s *campaignServiceImpl) GetCampaignByUserId(ctx context.Context, userId in
 	}
 }
 
-func (s *campaignServiceImpl) GetCampaignDetailById(ctx context.Context, userId, campaignId int) (*response.CampaignDetail, error) {
+func (s *campaignServiceImpl) GetDetailById(ctx context.Context, userId, campaignId int) (*response.CampaignDetail, error) {
 	if userId <= 0 {
 		return nil, nil
 	}
@@ -56,14 +56,14 @@ func (s *campaignServiceImpl) GetCampaignDetailById(ctx context.Context, userId,
 	return campaignById.ToCampaignDetailResp(), nil
 }
 
-func (s *campaignServiceImpl) CreateCampaign(ctx context.Context, campaign *request.Campaign) (*response.CampaignDetail, error) {
+func (s *campaignServiceImpl) Save(ctx context.Context, campaign *request.Campaign) (*response.CampaignDetail, error) {
 	//check user
 	existingUser, _ := s.user.FindById(ctx, campaign.UserId)
 	if existingUser == nil {
 		return nil, errors.New("user id not found")
 	}
 
-	save, err := s.campaign.Save(ctx, campaign.ToEntity())
+	save, err := s.campaign.Create(ctx, campaign.ToEntity())
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (s *campaignServiceImpl) CreateCampaign(ctx context.Context, campaign *requ
 	return save.ToCampaignDetailResp(), nil
 }
 
-func (s *campaignServiceImpl) UpdateCampaign(ctx context.Context, campaignId int, newCampaign *request.Campaign) (*response.CampaignDetail, error) {
+func (s *campaignServiceImpl) Update(ctx context.Context, campaignId int, newCampaign *request.Campaign) (*response.CampaignDetail, error) {
 	//get existing campaign
 	existingCampaign, _ := s.campaign.FindById(ctx, newCampaign.UserId, campaignId)
 	if existingCampaign == nil {

@@ -156,7 +156,7 @@ func (h *handlerImpl) UploadAvatar(c *fiber.Ctx) error {
 
 	}
 
-	return c.Status(http.StatusCreated).JSON(response.New{
+	return c.Status(http.StatusOK).JSON(response.New{
 		Success: true,
 		Code:    http.StatusOK,
 		Data:    resp,
@@ -183,10 +183,50 @@ func (h *handlerImpl) FindTrx(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(http.StatusCreated).JSON(response.New{
+	return c.Status(http.StatusOK).JSON(response.New{
 		Success: true,
 		Code:    http.StatusOK,
 		Data:    trx,
+	})
+}
+
+func (h *handlerImpl) CreateTrx(c *fiber.Ctx) error {
+	userId := common.GetUserId(c.Locals("userID"))
+	if userId <= 0 {
+		return c.Status(http.StatusBadRequest).JSON(response.New{
+			Success: false,
+			Code:    http.StatusBadRequest,
+			Message: "invalid user id",
+		})
+	}
+
+	var body request.Transaction
+
+	err := c.BodyParser(&body)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(response.New{
+			Success: false,
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+
+	body.UserId = userId
+
+	newTrx, err := h.trx.Save(c.Context(), &body)
+
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(response.New{
+			Success: false,
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusCreated).JSON(response.New{
+		Success: true,
+		Code:    http.StatusCreated,
+		Data:    newTrx,
 	})
 }
 

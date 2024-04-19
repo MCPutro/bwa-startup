@@ -53,8 +53,8 @@ func (c *campaignImpl) FindById(ctx context.Context, userId, campaignId int) (*e
 
 }
 
-func (c *campaignImpl) Save(ctx context.Context, campaign *entity.Campaign) (*entity.Campaign, error) {
-	err := c.db.WithContext(ctx).Create(campaign).Error
+func (c *campaignImpl) Create(ctx context.Context, campaign *entity.Campaign) (*entity.Campaign, error) {
+	err := c.db.WithContext(ctx).Create(&campaign).Error
 	if err != nil {
 		return nil, err
 	}

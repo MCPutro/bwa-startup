@@ -13,9 +13,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/bcrypt"
 	"mime/multipart"
 	"path/filepath"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userServiceImpl struct {
@@ -48,7 +49,7 @@ func (us *userServiceImpl) Register(ctx context.Context, newUser *request.Regist
 
 	//save new user to database
 	userEntity := newUser.ToEntity()
-	u, err := us.user.Save(ctx, userEntity)
+	u, err := us.user.Create(ctx, userEntity)
 	if err != nil {
 		return nil, err
 	}

@@ -23,6 +23,16 @@ func (t *Transaction) TableName() string {
 	return "transactions"
 }
 
+func (t *Transaction) ToUserTrx() *response.UserTrx {
+	return &response.UserTrx{
+		Id:           t.ID,
+		CampaignName: t.Campaign.Name,
+		Amount:       t.Amount,
+		Status:       t.Status,
+		CreatedAt:    t.CreatedAt.Format(constants.DatetimeFormat),
+	}
+}
+
 type TransactionList []*Transaction
 
 func (tl *TransactionList) ToCampaignTrxList() []*response.CampaignTrx {
