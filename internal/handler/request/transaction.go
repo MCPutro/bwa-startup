@@ -1,6 +1,9 @@
 package request
 
-import "bwa-startup/internal/entity"
+import (
+	"bwa-startup/internal/constants"
+	"bwa-startup/internal/entity"
+)
 
 type Transaction struct {
 	Amount     int `json:"amount"`
@@ -13,6 +16,6 @@ func (t *Transaction) ToEntity() *entity.Transaction {
 		CampaignId: t.CampaignId,
 		Amount:     t.Amount,
 		UserId:     t.UserId,
-		Status:     "Unpaid",
+		Status:     constants.Unpaid,
 	}
 }

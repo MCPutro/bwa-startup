@@ -36,7 +36,7 @@ migration-down:
 
 .SILENT: go-run
 go-run:
-	@go run main.go -config=properties/bwa-startup.develop.yaml
+	@go run main.go -config=properties/bwa-startup.prod.yaml
 
 .DEFAULT_GOAL := help
 

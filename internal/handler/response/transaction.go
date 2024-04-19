@@ -1,5 +1,7 @@
 package response
 
+import "bwa-startup/internal/constants"
+
 type CampaignTrx struct {
 	Id        int    `json:"transaction_id"`
 	Name      string `json:"name"`
@@ -8,9 +10,9 @@ type CampaignTrx struct {
 }
 
 type UserTrx struct {
-	Id           int    `json:"transaction_id"`
-	CampaignName string `json:"campaign_name"`
-	Amount       int    `json:"amount"`
-	Status       string `json:"status"`
-	CreatedAt    string `json:"created_at"`
+	Id           int                 `json:"transaction_id"`
+	CampaignName string              `json:"campaign_name"`
+	Amount       int                 `json:"amount"`
+	Status       constants.TrxStatus `json:"status"`
+	CreatedAt    string              `json:"created_at"`
 }

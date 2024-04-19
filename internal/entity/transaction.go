@@ -13,7 +13,7 @@ type Transaction struct {
 	UserId     int
 	User       User
 	Amount     int
-	Status     string
+	Status     constants.TrxStatus
 	Code       string
 	CreatedAt  time.Time `gorm:"column:created_at;autoCreateTime;<-:create"`
 	UpdatedAt  time.Time `gorm:"column:updated_at;autoCreateTime;autoUpdateTime"`
